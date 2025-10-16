@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Bank Dashboard — Navy & White Prototype</title>
+  <meta name="description" content="Navy & white banking dashboard prototype with landing, login and signup" />
+  <style>
+    /* ========================
+       Navy & White theme (mix of navy and white)
+       Responsive, landing, overlays, sidebar pages, mobile menu, and animations.
+       Core dashboard structure retained.
+       ======================== */
+    :root{
+      --navy-1: #031426;
+      --navy-2: #04263c;
+      --card-white: #ffffff;
+      --muted: #6b7f93;
+      --accent: #0a58a8;
+      --success: #22c55e;
+      --danger: #ff6b6b;
+      --glass: rgba(255,255,255,0.03);
+      --radius: 12px;
+      --shadow: 0 12px 32px rgba(2,8,24,0.18);
+      --max-width: 1100px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--navy-1) 0%, var(--navy-2) 100%);
+      color: #0b2b44;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:20px;
+      display:flex;
+      justify-content:center;
+      font-size:15px;
+      line-height:1.4;
+      min-height:100vh;
+      -webkit-text-size-adjust:100%;
+    }
+
+    .container{width:100%;max-width:var(--max-width);margin:0 auto;position:relative;}
+
+    /* Mobile topbar (hamburger) - hidden on desktop */
+    .mobile-topbar{
+      display:none;
+      position:fixed; left:12px; right:12px; top:12px; z-index:2100;
+      background:transparent; gap:8px; align-items:center; justify-content:space-between;
+      pointer-events:auto;
+    }
+    .mobile-topbar .mt-left{display:flex;gap:10px;align-items:center}
+    .hamburger{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#063a7a);display:flex;align-items:center;justify-content:center;color:white;border:0;cursor:pointer;
+      box-shadow:0 8px 20px rgba(6,58,122,0.18);
+    }
+    .mobile-topbar .brand-mini{display:flex;flex-direction:column}
+    .mobile-topbar .brand-mini strong{color:#eaf6ff}
+
+    /* Landing / home content */
+    .home {
+      display:flex; gap:24px; align-items:center; justify-content:space-between; margin-bottom:18px;
+    }
+    @media (max-width:960px){ .home{flex-direction:column;align-items:stretch} }
+    .home-left{
+      color: #eaf6ff;
+      flex:1;
+      min-width:0;
+    }
+    .eyebrow{
+      display:inline-block;background:rgba(255,255,255,0.04);padding:6px 10px;border-radius:999px;color:#d9f0ff;font-weight:700;margin-bottom:12px;font-size:13px;
+    }
+    .home-left h1{margin:0 0 12px 0;font-size:32px}
+    .home-left p{margin:0 0 18px 0;color:rgba(235,248,255,0.9)}
+    .home-cta{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;
+    }
+    .btn-primary{background:linear-gradient(180deg,var(--accent), #074a86);color:white;box-shadow:0 8px 22px rgba(6,58,122,0.18)}
+    .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.09);color:#e8f8ff}
+
+    .home-right{
+      width:420px; max-width:95%;
+      background:var(--card-white); color: #0b2b44;
+      padding:18px;border-radius:var(--radius);box-shadow:var(--shadow);
+    }
+    .home-right h3{margin:0 0 6px 0}
+    .home-right .muted{color:var(--muted);font-size:13px}
+
+    /* Layout (dashboard) */
+    .wrap{width:100%;max-width:var(--max-width);display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start;margin-top:10px}
+    @media (max-width:960px){ .wrap{grid-template-columns:1fr;padding:0 12px} }
+
+    /* Sidebar - default desktop, mobile handled with off-canvas */
+    .sidebar{
+      position:sticky;top:20px;height:calc(100vh - 40px);
+      background:var(--card-white);
+      border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid rgba(9,30,50,0.04);
+      display:flex;flex-direction:column;gap:12px;
+      color: #0b2b44;
+      transition:transform .28s ease,left .28s ease;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#063a7a);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px}
+    .brand h1{margin:0;font-size:16px}
+    .brand p{margin:0;font-size:13px;color:var(--muted)}
+
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+    .nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:var(--muted);text-decoration:none;font-weight:700;cursor:pointer}
+    .nav a.active{background:rgba(10,88,168,0.08);color:var(--accent)}
+    .nav a:hover{background:rgba(10,88,168,0.05);color:var(--accent)}
+
+    .profile{margin-top:auto;display:flex;gap:12px;align-items:center;padding-top:8px;border-top:1px dashed rgba(9,30,50,0.04)}
+    .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#eff7ff,#dff1ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy-2)}
+    .profile small{display:block;color:var(--muted)}
+
+    /* Main area */
+    .main{min-height:60vh;background:transparent}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .search{display:flex;align-items:center;gap:12px;background:var(--card-white);padding:8px;border-radius:12px;width:100%;max-width:640px;border:1px solid rgba(9,30,50,0.04)}
+    .search input{border:0;outline:0;background:transparent;font-size:14px;width:100%;color:var(--navy-2)}
+
+    .actions{display:flex;gap:10px;align-items:center}
+    .btn{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+    .btn.ghost{background:transparent;color:var(--muted);border:1px solid rgba(9,30,50,0.04);box-shadow:none}
+
+    /* Cards/grid */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .card{background:var(--card-white);border-radius:12px;padding:18px;box-shadow:var(--shadow);border:1px solid rgba(9,30,50,0.04)}
+    .account-card{grid-column:1/span 3;display:flex;gap:20px;align-items:center;justify-content:space-between;padding:18px}
+    .acct-meta small{color:var(--muted);display:block}
+    .balance{font-size:28px;font-weight:800;margin-top:4px;color:var(--navy-2)}
+
+    .mini-actions button{padding:8px 10px;border-radius:10px;border:1px solid rgba(9,30,50,0.04);background:transparent;color:var(--muted);cursor:pointer}
+
+    .quick{display:flex;gap:12px}
+    .qa{flex:1;padding:14px;border-radius:12px;text-align:center;font-weight:800;border:1px dashed rgba(9,30,50,0.04);cursor:pointer;color:var(--navy-2)}
+    .qa:focus{outline:3px solid rgba(10,88,168,0.12);outline-offset:3px}
+
+    /* Transactions */
+    .transactions{background:transparent;padding:14px;border-radius:12px}
+    .tx-list{display:flex;flex-direction:column;gap:10px}
+    .tx{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;background:var(--card-white);border:1px solid rgba(9,30,50,0.04)}
+    .tx .left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+    .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#083957,#06314a);font-weight:700;color:white}
+    .meta small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .badge{font-weight:700;padding:6px 10px;border-radius:999px;font-size:13px;white-space:nowrap}
+    .badge.success{background:rgba(34,197,94,0.12);color:var(--success)}
+    .badge.failed{background:rgba(255,107,107,0.10);color:var(--danger)}
+    .badge.pending{background:rgba(250,204,21,0.08);color:#d97706}
+
+    .table-head{display:flex;align-items:center;justify-content:space-between;padding:12px 6px;color:var(--muted);font-weight:700}
+    .table-head button{background:transparent;border:0;color:var(--muted);cursor:pointer}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* Overlays */
+    .home-screen{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,8,16,0.40), rgba(2,8,16,0.6));z-index:900;padding:12px;
+    }
+    .auth-screen{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,8,16,0.72), rgba(2,8,16,0.85));
+      z-index:9999;padding:12px;visibility:hidden;opacity:0;transition:opacity .18s ease, visibility .18s ease;
+    }
+    .auth-screen.show{visibility:visible;opacity:1}
+    .login-card{width:420px;max-width:95%;background:var(--card-white);border-radius:14px;padding:18px;border:1px solid rgba(9,30,50,0.06);box-shadow:0 20px 60px rgba(2,8,24,0.5);color:var(--navy-2)}
+    .login-card h2{margin:0 0 8px 0}
+    .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    input[type="text"], input[type="password"]{padding:10px 12px;border-radius:8px;border:1px solid rgba(9,30,50,0.06);background:transparent;color:var(--navy-2)}
+    .field-inline{display:flex;gap:8px;align-items:center}
+    .err{color:var(--danger);font-weight:700;margin-top:6px;display:none}
+    .show-pass{background:transparent;border:0;color:var(--muted);cursor:pointer}
+
+    /* Processing overlay */
+    .processing{ position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,8,16,0.5);z-index:10050; }
+    .processing.show{display:flex}
+    .processing-card{ display:flex;flex-direction:column;gap:10px;align-items:center;padding:18px;border-radius:12px;background:var(--card-white);color:var(--navy-2);box-shadow:var(--shadow); }
+    .processing-card img{width:72px;height:72px;display:block}
+
+    /* Page sections */
+    .page-section{display:none;opacity:0}
+    .page-section.active{display:block;opacity:1}
+
+    /* fade classes for JS-driven animation (opacity transition) */
+    .fade-in{ animation: fadeIn .22s ease forwards; }
+    .fade-out{ animation: fadeOut .18s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+    @keyframes fadeOut { from { opacity: 1; transform:none; } to { opacity:0; transform: translateY(6px); } }
+
+    /* Sidebar off-canvas for mobile */
+    .sidebar-backdrop { display:none; }
+    @media (max-width:960px){
+      .mobile-topbar{ display:flex; }
+      /* make sidebar off-canvas */
+      .sidebar{
+        position:fixed;left:-100%;top:0;bottom:0;width:280px;height:100vh;padding:18px;border-radius:0;box-shadow:0 20px 60px rgba(2,8,24,0.6);
+      }
+      /* when body has sidebar-open class, push it in */
+      body.sidebar-open .sidebar{ left:0; transform:translateX(0); }
+      /* backdrop */
+      .sidebar-backdrop{ display:block; position:fixed; inset:0; z-index:1400; background:rgba(0,0,0,0.45); opacity:0; transition:opacity .18s ease; pointer-events:none; }
+      body.sidebar-open .sidebar-backdrop{ opacity:1; pointer-events:auto; }
+
+      /* push main content slightly to the right when sidebar is open (optional) */
+      body.sidebar-open .wrap { transform: translateX(8px); transition:transform .18s ease; }
+    }
+
+    /* Small responsive tweaks */
+    @media (max-width:960px) {
+      .home { padding:10px; gap:12px; }
+      .home-right { width:100%; order:2; margin-top:8px; }
+      .home-left { order:1; }
+      .home-cta { flex-direction:column; }
+      .home-cta .btn { width:100%; justify-content:center; }
+
+      .sidebar { position:relative; height:auto; order:2; padding:14px; }
+      .wrap { gap:12px; }
+      .grid { grid-template-columns: repeat(2,1fr); gap:12px; }
+      .account-card { padding:16px; gap:12px; }
+      .balance { font-size:24px; }
+
+      .login-card { width:100%; margin:10px; }
+      .search { max-width:100%; padding:10px; }
+    }
+
+    @media (max-width:600px) {
+      body { padding:12px; }
+      .home-left h1 { font-size:22px; }
+      .brand h1 { font-size:15px; }
+      .logo { width:44px; height:44px; font-size:16px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { padding:12px; border-radius:10px; }
+      .account-card { flex-direction:column; align-items:flex-start; gap:12px; }
+      .mini-actions { display:flex; gap:8px; margin-top:8px }
+      .mini-actions button { padding:8px 10px; font-size:13px; }
+
+      .tx { padding:10px; flex-direction:column; align-items:flex-start; gap:10px; }
+      .tx .left { width:100%; }
+      .tx > div:last-child { align-self:flex-end; }
+
+      .search svg { display:none; } /* save space */
+      .search input { font-size:14px; }
+      .home-right { padding:14px; }
+
+      .btn { padding:12px 14px; font-size:15px; border-radius:10px; }
+      .home-cta .btn { padding:12px; width:100% }
+    }
+
+    /* Ensure overlays are scrollable on small screens */
+    .auth-screen, .home-screen { -webkit-overflow-scrolling: touch; overflow:auto; }
+  </style>
+</head>
+<body>
+  <div class="container" id="appContainer">
+    <!-- Mobile top bar -->
+    <div class="mobile-topbar" role="navigation" aria-hidden="false">
+      <div class="mt-left">
+        <button id="hamburgerBtn" class="hamburger" aria-label="Open menu" aria-expanded="false">
+          <!-- simple icon -->
+          <svg width="18" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><rect x="3" y="5" width="18" height="2" rx="1" fill="white"/><rect x="3" y="11" width="18" height="2" rx="1" fill="white"/><rect x="3" y="17" width="18" height="2" rx="1" fill="white"/></svg>
+        </button>
+        <div class="brand-mini">
+          <strong style="color:#eaf6ff">Texas Capital</strong>
+          <small style="color:rgba(235,248,255,0.9);font-size:12px">Secure banking</small>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center">
+        <button id="mobileProfileBtn" class="logo" aria-label="Open account">TC</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR BACKDROP (for mobile) -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+    <!-- HOME/LANDING SCREEN (user lands here first) -->
+    <div id="homeScreen" class="home-screen" role="dialog" aria-modal="true" aria-labelledby="homeTitle" style="display:flex;">
+      <div style="width:100%;max-width:var(--max-width);display:flex;align-items:center;gap:24px;padding:20px">
+        <div class="home-left" style="flex:1">
+          <div class="eyebrow">Modern banking • secure • fast</div>
+          <h1 id="homeTitle">Welcome to Texas Capital</h1>
+          <p>Manage accounts, view rental payments, and track activity with a clear navy & white interface optimized for mobile and desktop.</p>
+          <div class="home-cta" style="margin-top:14px">
+            <button id="goLogin" class="btn btn-primary">Login</button>
+            <button id="goSignup" class="btn btn-outline">Sign up</button>
+          </div>
+        </div>
+
+        <div class="home-right" aria-hidden="true">
+          <h3>Account preview</h3>
+          <p class="muted">Sign in to view the full dashboard</p>
+
+          <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <div>
+              <small class="muted">Available balance</small>
+              <!-- HIDDEN/MASKED on landing -->
+              <div id="homeBalance" class="balance">••••••</div>
+              <small class="muted">As of Oct 15, 2025</small>
+            </div>
+            <div>
+              <button id="previewLogin" class="btn btn-primary">Sign in</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN overlay -->
+    <div id="loginScreen" class="auth-screen" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-card" role="document">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <h2 id="loginTitle">Sign in</h2>
+            <div class="muted" style="font-size:13px">Access your account</div>
+          </div>
+          <div style="text-align:right;color:var(--muted);font-weight:700">TC</div>
+        </div>
+
+        <form id="loginForm" autocomplete="off" onsubmit="return false;">
+          <div class="form-row">
+            <label for="username" class="muted">Username</label>
+            <input id="username" name="username" type="text" inputmode="text" aria-required="true" placeholder="Enter username" value="" />
+          </div>
+
+          <div class="form-row">
+            <label for="password" class="muted">Password</label>
+            <div class="field-inline">
+              <input id="password" name="password" type="password" aria-required="true" placeholder="Enter password" />
+              <button type="button" class="show-pass" id="toggleShowPwd" aria-pressed="false">Show</button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input id="remember" type="checkbox" />
+              <label for="remember" class="muted" style="font-size:13px">Remember me</label>
+            </div>
+            <button id="loginBtn" class="btn btn-primary" type="submit">Sign in</button>
+          </div>
+
+          <div id="loginError" class="err" role="alert">Invalid username or password</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- SIGNUP overlay (neutral) -->
+    <div id="signupScreen" class="auth-screen" role="dialog" aria-modal="true" aria-labelledby="signupTitle">
+      <div class="login-card" role="document">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <h2 id="signupTitle">Create account</h2>
+            <div class="muted" style="font-size:13px">Create your account to access the dashboard</div>
+          </div>
+          <div style="text-align:right;color:var(--muted);font-weight:700">TC</div>
+        </div>
+
+        <form id="signupForm" autocomplete="off" onsubmit="return false;">
+          <div class="form-row">
+            <label for="signupUsername" class="muted">Choose username</label>
+            <input id="signupUsername" name="signupUsername" type="text" placeholder="Choose username" />
+          </div>
+
+          <div class="form-row">
+            <label for="signupPassword" class="muted">Choose password</label>
+            <div class="field-inline">
+              <input id="signupPassword" name="signupPassword" type="password" placeholder="Choose password" />
+              <button type="button" class="show-pass" id="toggleShowSignupPwd" aria-pressed="false">Show</button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:8px">
+            <button id="signupBtn" class="btn btn-primary" type="button">Create account</button>
+          </div>
+
+          <div id="signupMsg" style="margin-top:10px;color:var(--muted);display:none"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Processing overlay -->
+    <div id="processing" class="processing" role="status" aria-live="polite" aria-hidden="true">
+      <div class="processing-card">
+        <img alt="loading" src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 100 30"><circle cx="15" cy="15" r="8" fill="%230b67b2"><animate attributeName="r" from="8" to="8" begin="0s" dur="0.8s" values="8;4;8" calcMode="linear" repeatCount="indefinite" /><animate attributeName="opacity" values="1;.3;1" dur="0.8s" repeatCount="indefinite" /></circle><circle cx="50" cy="15" r="8" fill="%230b67b2"><animate attributeName="r" from="8" to="8" begin="0.16s" dur="0.8s" values="8;4;8" calcMode="linear" repeatCount="indefinite" /><animate attributeName="opacity" values="1;.3;1" dur="0.8s" begin="0.16s" repeatCount="indefinite" /></circle><circle cx="85" cy="15" r="8" fill="%230b67b2"><animate attributeName="r" from="8" to="8" begin="0.32s" dur="0.8s" values="8;4;8" calcMode="linear" repeatCount="indefinite" /><animate attributeName="opacity" values="1;.3;1" dur="0.8s" begin="0.32s" repeatCount="indefinite" /></circle></svg>' />
+        <div style="font-weight:800">Processing…</div>
+        <div class="muted" style="font-size:13px">Securing connection & verifying credentials</div>
+      </div>
+    </div>
+
+    <!-- Main app content -->
+    <div id="app" style="display:none" class="wrap" role="main" aria-live="polite">
+      <!-- Sidebar -->
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand">
+          <div class="logo" aria-hidden>TC</div>
+          <div>
+            <h1>Texas Capital</h1>
+            <p class="muted">Navy & white prototype</p>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Main">
+          <a class="active" data-page="dashboard">Dashboard</a>
+          <a data-page="accounts">Accounts</a>
+          <a data-page="payments">Payments</a>
+          <a data-page="cards">Cards</a>
+          <a data-page="insights">Insights</a>
+        </nav>
+
+        <div class="profile" aria-hidden="true">
+          <div class="avatar">TC</div>
+          <div class="info">
+            <strong id="profileName">User</strong>
+            <small class="muted" id="memberSince">Member since 2021</small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main (pages live here) -->
+      <section class="main" aria-label="Dashboard content">
+        <header class="header" role="banner">
+          <div style="display:flex;gap:12px;align-items:center;width:100%">
+            <div class="search" role="search" aria-label="Search transactions or help">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M21 21l-4.35-4.35" stroke="#8fb7d6" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <input id="searchInput" placeholder="Search transactions, payees, or actions..." aria-label="Search" />
+              <button id="toggleBalanceBtn" class="btn ghost" style="font-weight:700">Hide Balances</button>
+            </div>
+          </div>
+
+          <div class="actions" aria-hidden="true">
+            <button class="btn" id="newTransferBtn">New Transfer</button>
+          </div>
+        </header>
+
+        <!-- Page: Dashboard -->
+        <div id="page-dashboard" class="page-section active">
+          <div class="grid" aria-live="polite">
+            <div class="card account-card">
+              <div class="account-left">
+                <div style="display:flex;flex-direction:column">
+                  <small class="muted">Checking •••• 1425</small>
+                  <div class="balance" id="balance">$75,000.00</div>
+                  <small class="muted">Available balance</small>
+                </div>
+
+                <div class="mini-actions" aria-hidden="true">
+                  <button id="copyAcct">Copy</button>
+                  <button class="ghost" onclick="alert('Open statements (prototype)')">Statements</button>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="text-align:right">
+                  <small class="muted">As of</small>
+                  <div style="font-weight:700" id="asOf">Oct 15, 2025</div>
+                </div>
+                <button class="btn" id="depositBtn">Deposit</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="margin:0 0 12px 0">Quick actions</h3>
+              <div class="quick" role="group" aria-label="Quick banking actions">
+                <div class="qa" tabindex="0" onclick="fakeAction('Transfer')">Transfer</div>
+                <div class="qa" tabindex="0" onclick="fakeAction('Deposit')">Deposit</div>
+                <div class="qa" tabindex="0" onclick="fakeAction('Pay bill')">Pay bill</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="margin:0 0 12px 0">Cards</h3>
+              <p class="muted" style="margin:0">Visa •••• 3112 — Available credit $12,800</p>
+            </div>
+
+            <div class="card transactions" style="grid-column: 1 / span 2;">
+              <div class="table-head">
+                <div style="display:flex;gap:12px;align-items:center">
+                  <strong>Recent transactions</strong>
+                  <small class="muted">• last 30 days</small>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button class="ghost" id="filterBtn">Filter</button>
+                  <button class="ghost" id="sortBtn">Sort</button>
+                </div>
+              </div>
+
+              <div style="margin-top:8px" id="txContainer" class="tx-list" aria-live="polite">
+                <!-- transactions rendered by JS -->
+              </div>
+
+              <div style="margin-top:12px;text-align:center">
+                <button class="ghost" onclick="loadMore()">Load more</button>
+              </div>
+            </div>
+
+            <div class="card" style="min-height:120px">
+              <h3 style="margin:0 0 12px 0">Security</h3>
+              <p class="muted" style="margin:0 0 6px 0">Two-factor authentication: <strong>Enabled</strong></p>
+              <p class="muted" style="margin:0">Last login: <strong id="lastLogin">Oct 15, 2025 — 10:12 PM</strong></p>
+              <div style="margin-top:12px">
+                <button id="logoutBtn" class="ghost">Log out</button>
+              </div>
+            </div>
+          </div>
+
+          <footer>
+            © <span id="year"></span> Texas Capital — Prototype UI. This is a design prototype — not a real bank.
+          </footer>
+        </div>
+
+        <!-- Page: Accounts -->
+        <div id="page-accounts" class="page-section">
+          <div class="grid">
+            <div class="card" style="grid-column:1/span 3">
+              <h3>Accounts</h3>
+              <p class="muted">Manage your accounts. Below are your primary accounts and balances.</p>
+              <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;border:1px solid rgba(9,30,50,0.04);background:var(--card-white)">
+                  <div><strong>Checking •••• 1425</strong><div class="muted">Available balance</div></div>
+                  <div style="font-weight:800">$75,000.00</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;border:1px solid rgba(9,30,50,0.04);background:var(--card-white)">
+                  <div><strong>Savings •••• 9921</strong><div class="muted">Available balance</div></div>
+                  <div style="font-weight:800">$18,420.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Payments -->
+        <div id="page-payments" class="page-section">
+          <div class="grid">
+            <div class="card" style="grid-column:1/span 3">
+              <h3>Payments</h3>
+              <p class="muted">Schedule and view payments.</p>
+              <div style="margin-top:12px">
+                <button class="btn btn-primary" onclick="fakeAction('Make Payment')">Make a payment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Cards -->
+        <div id="page-cards" class="page-section">
+          <div class="grid">
+            <div class="card" style="grid-column:1/span 3">
+              <h3>Cards</h3>
+              <p class="muted">View and manage your cards.</p>
+              <div style="margin-top:12px">
+                <div style="padding:12px;border-radius:8px;border:1px solid rgba(9,30,50,0.04);display:flex;justify-content:space-between;align-items:center">
+                  <div><strong>Visa •••• 3112</strong><div class="muted">Available credit: $12,800</div></div>
+                  <div><button class="btn" onclick="fakeAction('View Card')">View</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page: Insights -->
+        <div id="page-insights" class="page-section">
+          <div class="grid">
+            <div class="card" style="grid-column:1/span 3">
+              <h3>Insights</h3>
+              <p class="muted">Quick overview of your income & spending trends.</p>
+              <div style="margin-top:12px" class="muted">Chart placeholder — add charts here later.</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </div>
+
+  <script>
+    /*************
+      Credentials & Auth (client-side demo only)
+      NOTE: credentials exist in JS for test only but are NOT shown in UI anywhere.
+    *************/
+    const DEMO_USERNAME = 'Vandella1';
+    const DEMO_PASSWORD = 'Vandellahome@';
+
+    // ELEMENTS
+    const bodyEl = document.body;
+    const appContainer = document.getElementById('appContainer');
+    const homeScreen = document.getElementById('homeScreen');
+    const loginOverlay = document.getElementById('loginScreen');
+    const signupOverlay = document.getElementById('signupScreen');
+    const processing = document.getElementById('processing');
+    const app = document.getElementById('app');
+
+    const goLogin = document.getElementById('goLogin');
+    const goSignup = document.getElementById('goSignup');
+    const previewLogin = document.getElementById('previewLogin');
+
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const toggleShowPwd = document.getElementById('toggleShowPwd');
+
+    const signupForm = document.getElementById('signupForm');
+    const signupBtn = document.getElementById('signupBtn');
+    const signupUsername = document.getElementById('signupUsername');
+    const signupPassword = document.getElementById('signupPassword');
+    const toggleShowSignupPwd = document.getElementById('toggleShowSignupPwd');
+    const signupMsg = document.getElementById('signupMsg');
+
+    const profileName = document.getElementById('profileName');
+    const homeBalance = document.getElementById('homeBalance');
+    const dashboardBalance = document.getElementById('balance');
+
+    const navLinks = document.querySelectorAll('.nav [data-page]');
+    const pages = {
+      dashboard: document.getElementById('page-dashboard'),
+      accounts: document.getElementById('page-accounts'),
+      payments: document.getElementById('page-payments'),
+      cards: document.getElementById('page-cards'),
+      insights: document.getElementById('page-insights')
+    };
+
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+    // helper: overlay show/hide
+    function showOverlay(el){ el.classList.add('show'); el.style.visibility='visible'; el.style.opacity='1'; }
+    function hideOverlay(el){ el.classList.remove('show'); el.style.visibility='hidden'; el.style.opacity='0'; }
+
+    // show login/signup from landing
+    goLogin.addEventListener('click', showLogin);
+    goSignup.addEventListener('click', showSignup);
+    previewLogin.addEventListener('click', showLogin);
+
+    function showHome(){ homeScreen.style.display='flex'; hideOverlay(loginOverlay); hideOverlay(signupOverlay); }
+    function showLogin(){ homeScreen.style.display='none'; showOverlay(loginOverlay); hideOverlay(signupOverlay); usernameInput.focus(); }
+    function showSignup(){ homeScreen.style.display='none'; hideOverlay(loginOverlay); showOverlay(signupOverlay); signupUsername.focus(); }
+
+    // close overlays on Escape
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape'){
+        hideOverlay(loginOverlay); hideOverlay(signupOverlay);
+        // close sidebar on mobile if open
+        if(bodyEl.classList.contains('sidebar-open')) toggleSidebar(false);
+        homeScreen.style.display = 'flex';
+      }
+    });
+
+    // Toggle show/hide password
+    toggleShowPwd.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      toggleShowPwd.textContent = isHidden ? 'Hide' : 'Show';
+      toggleShowPwd.setAttribute('aria-pressed', String(isHidden));
+    });
+    toggleShowSignupPwd.addEventListener('click', () => {
+      const el = signupPassword;
+      const isHidden = el.type === 'password';
+      el.type = isHidden ? 'text' : 'password';
+      toggleShowSignupPwd.textContent = isHidden ? 'Hide' : 'Show';
+      toggleShowSignupPwd.setAttribute('aria-pressed', String(isHidden));
+    });
+
+    // Accounts helpers (local)
+    function loadAccounts(){ try{ return JSON.parse(localStorage.getItem('demo_accounts')||'[]'); }catch(e){return []}}
+    function saveAccount(u,p){ const a=loadAccounts(); a.push({u,p}); localStorage.setItem('demo_accounts', JSON.stringify(a)); }
+    function accountExists(u){ return loadAccounts().some(x=>x.u===u); }
+    function checkAccount(u,p){
+      if(u===DEMO_USERNAME && p===DEMO_PASSWORD) return true;
+      return loadAccounts().some(x=>x.u===u && x.p===p);
+    }
+
+    // Processing overlay helper
+    function showProcessing(ms=1200){
+      processing.classList.add('show');
+      processing.setAttribute('aria-hidden','false');
+      return new Promise(resolve => setTimeout(()=>{
+        processing.classList.remove('show');
+        processing.setAttribute('aria-hidden','true');
+        resolve();
+      }, ms));
+    }
+
+    // Login flow
+    loginForm.addEventListener('submit', (e) => { e.preventDefault(); attemptLogin(); });
+    loginBtn.addEventListener('click', attemptLogin);
+
+    async function attemptLogin(){
+      loginError.style.display = 'none';
+      const u = usernameInput.value.trim();
+      const p = passwordInput.value;
+      if(!u || !p){
+        loginError.textContent = 'Please enter username and password';
+        loginError.style.display = 'block';
+        return;
+      }
+
+      // professional processing delay
+      await showProcessing(1100);
+
+      if(checkAccount(u,p)){
+        if(document.getElementById('remember') && document.getElementById('remember').checked){
+          sessionStorage.setItem('demoAuth','true');
+        }
+        profileName.textContent = u;
+        hideOverlay(loginOverlay);
+        homeScreen.style.display = 'none';
+        app.style.display = 'grid';
+        document.getElementById('lastLogin').textContent = new Date().toLocaleString();
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+        dashboardBalance.textContent = '$75,000.00';
+        switchPage('dashboard');
+      } else {
+        loginError.textContent = 'Invalid username or password';
+        loginError.style.display = 'block';
+      }
+    }
+
+    // Signup flow (neutral, no demo text)
+    signupBtn.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      signupMsg.style.display = 'none';
+      const u = signupUsername.value.trim();
+      const p = signupPassword.value;
+      if(!u || !p){ signupMsg.textContent = 'Please enter username and password'; signupMsg.style.display='block'; return; }
+      if(u === DEMO_USERNAME){ signupMsg.textContent = 'Username unavailable. Pick another.'; signupMsg.style.display='block'; return; }
+      if(accountExists(u)){ signupMsg.textContent = 'Username exists. Choose another.'; signupMsg.style.display='block'; return; }
+
+      // store account locally
+      saveAccount(u,p);
+
+      // show processing to feel professional, then auto-login
+      await showProcessing(1200);
+
+      sessionStorage.setItem('demoAuth','true');
+      profileName.textContent = u;
+      hideOverlay(signupOverlay);
+      homeScreen.style.display = 'none';
+      app.style.display = 'grid';
+      document.getElementById('lastLogin').textContent = new Date().toLocaleString();
+      document.getElementById('year').textContent = new Date().getFullYear();
+      document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+      dashboardBalance.textContent = '$75,000.00';
+      switchPage('dashboard');
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', ()=> {
+      sessionStorage.removeItem('demoAuth');
+      usernameInput.value=''; passwordInput.value='';
+      document.getElementById('loginError').style.display='none';
+      app.style.display='none';
+      homeScreen.style.display='flex';
+      homeBalance.textContent = '••••••';
+    });
+
+    // If remembered session -> show app directly
+    if(sessionStorage.getItem('demoAuth') === 'true'){
+      homeScreen.style.display='none';
+      app.style.display='grid';
+      dashboardBalance.textContent = '$75,000.00';
+      switchPage('dashboard');
+    }
+
+    /************* Sidebar mobile toggle *************/
+    function toggleSidebar(open){
+      const isOpen = open === undefined ? !bodyEl.classList.contains('sidebar-open') : !!open;
+      if(isOpen){
+        bodyEl.classList.add('sidebar-open');
+        hamburgerBtn.setAttribute('aria-expanded','true');
+      } else {
+        bodyEl.classList.remove('sidebar-open');
+        hamburgerBtn.setAttribute('aria-expanded','false');
+      }
+    }
+    hamburgerBtn.addEventListener('click', ()=> toggleSidebar());
+    sidebarBackdrop.addEventListener('click', ()=> toggleSidebar(false));
+    // close sidebar when nav link clicked (mobile)
+    navLinks.forEach(a => a.addEventListener('click', ()=> {
+      if(window.matchMedia('(max-width:960px)').matches) toggleSidebar(false);
+    }));
+
+    /************* Page switch with fade animation *************/
+    // helper to animate page switch
+    function animateSwitch(oldPageEl, newPageEl){
+      // if same, do nothing
+      if(oldPageEl === newPageEl) return;
+      // fade out old
+      if(oldPageEl){
+        oldPageEl.classList.add('fade-out');
+        // remove active only after animation
+        setTimeout(()=>{
+          oldPageEl.classList.remove('fade-out');
+          oldPageEl.classList.remove('active');
+          oldPageEl.style.display = 'none';
+        }, 180);
+      }
+      // prepare and fade in new
+      newPageEl.style.display = 'block';
+      newPageEl.classList.add('fade-in');
+      // set active
+      newPageEl.classList.add('active');
+      // remove anim class after done
+      setTimeout(()=> newPageEl.classList.remove('fade-in'), 260);
+    }
+
+    function switchPage(page){
+      // find current active
+      const current = document.querySelector('.page-section.active');
+      // update nav active classes
+      navLinks.forEach(a => a.classList.remove('active'));
+      const clicked = document.querySelector('.nav [data-page="'+page+'"]');
+      if(clicked) clicked.classList.add('active');
+      // perform animated switch
+      const target = pages[page];
+      if(!target) return;
+      animateSwitch(current, target);
+      // UX: scroll main to top (safe)
+      document.querySelector('.main').scrollTop = 0;
+    }
+
+    navLinks.forEach(a => {
+      a.addEventListener('click', () => {
+        const page = a.getAttribute('data-page');
+        switchPage(page);
+      });
+    });
+
+    /*************
+      Dashboard data & UI (unchanged behavior)
+    *************/
+    const txData = [
+      {id:1, date: '2025-10-15', title: 'Payment from House Property', desc:'Rental income', amount:2500, status:'success'},
+      {id:2, date: '2025-10-14', title: 'Payment from House Property', desc:'Rental income', amount:2500, status:'success'},
+      {id:3, date: '2025-10-12', title: 'Payment from House Property', desc:'Rental income', amount:2500, status:'success'},
+      {id:4, date: '2025-10-10', title: 'Payment from House Property', desc:'Rental income', amount:2500, status:'success'},
+      {id:5, date: '2025-10-05', title: 'Payment from House Property', desc:'Rental income', amount:2500, status:'success'},
+      {id:6, date: '2025-10-05', title: 'Payment from House Property', desc:'Rental income (duplicate)', amount:2500, status:'success'},
+      {id:7, date: '2025-10-05', title: 'Payment from House Property', desc:'Rental income (duplicate 2)', amount:2500, status:'failed'},
+      {id:8, date: '2025-09-29', title: 'Payment from House Property', desc:'Rental income', amount:2500, status:'pending'},
+      {id:9, date: '2025-09-22', title: 'Utilities — Water Co.', desc:'Auto pay', amount:-120.35, status:'success'},
+      {id:10, date: '2025-09-18', title: 'Grocery Store', desc:'Card purchase', amount:-86.74, status:'success'}
+    ];
+
+    function fmt(n){
+      const sign = n < 0 ? '-' : '';
+      const abs = Math.abs(n);
+      const cents = Math.round(abs * 100);
+      const dollars = Math.floor(cents / 100);
+      const rem = (cents % 100).toString().padStart(2,'0');
+      const dollarsStr = dollars.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return sign + '$' + dollarsStr + '.' + rem;
+    }
+
+    const txContainer = document.getElementById('txContainer');
+    function prettyDate(iso){
+      const d = new Date(iso + 'T00:00:00');
+      return d.toLocaleDateString(undefined, { month: 'short', day:'numeric' });
+    }
+
+    function renderTransactions(list){
+      txContainer.innerHTML = '';
+      if(!list.length){
+        txContainer.innerHTML = '<div class="muted" style="padding:16px;text-align:center">No transactions found</div>';
+        return;
+      }
+      list.forEach(tx=>{
+        const row = document.createElement('div');
+        row.className = 'tx';
+        row.innerHTML = `
+          <div class="left" style="display:flex;align-items:center;gap:12px">
+            <div class="icon" aria-hidden>${tx.title.charAt(0)}</div>
+            <div class="meta">
+              <div style="font-weight:700">${tx.title}</div>
+              <small>${tx.desc} • ${prettyDate(tx.date)}</small>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="font-weight:800;color:#0b2b44">${fmt(tx.amount)}</div>
+            <div class="badge ${tx.status === 'success' ? 'success' : tx.status === 'failed' ? 'failed' : 'pending'}">${tx.status}</div>
+          </div>
+        `;
+        txContainer.appendChild(row);
+      });
+    }
+
+    // initial render
+    let currentTx = [...txData].sort((a,b) => new Date(b.date) - new Date(a.date));
+    renderTransactions(currentTx);
+
+    // Header & controls
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+
+    // Toggle balances
+    const balanceEl = document.getElementById('balance');
+    const toggleBtn = document.getElementById('toggleBalanceBtn');
+    let hidden = false;
+    toggleBtn.addEventListener('click', ()=>{
+      hidden = !hidden;
+      balanceEl.textContent = hidden ? '••••••' : '$75,000.00';
+      toggleBtn.textContent = hidden ? 'Show Balances' : 'Hide Balances';
+    });
+
+    // Copy account
+    document.getElementById('copyAcct').addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText('Checking •••• 1425');
+        alert('Account copied');
+      }catch(e){
+        alert('Unable to copy');
+      }
+    });
+
+    // Quick actions
+    function fakeAction(name){
+      alert(name + ' — this is a UI prototype.');
+    }
+
+    // Filter & Sort
+    document.getElementById('filterBtn').addEventListener('click', ()=> {
+      const active = document.getElementById('filterBtn').dataset.active === 'true';
+      if(!active){
+        currentTx = [...txData].filter(t => t.status === 'failed').sort((a,b)=>new Date(b.date)-new Date(a.date));
+        document.getElementById('filterBtn').dataset.active = 'true';
+        document.getElementById('filterBtn').textContent = 'Filter: Failed';
+      } else {
+        currentTx = [...txData].sort((a,b) => new Date(b.date) - new Date(a.date));
+        document.getElementById('filterBtn').dataset.active = 'false';
+        document.getElementById('filterBtn').textContent = 'Filter';
+      }
+      renderTransactions(currentTx);
+    });
+
+    document.getElementById('sortBtn').addEventListener('click', ()=> {
+      const asc = document.getElementById('sortBtn').dataset.asc === 'true';
+      currentTx.sort((a,b) => asc ? a.amount - b.amount : b.amount - a.amount);
+      document.getElementById('sortBtn').dataset.asc = !asc;
+      renderTransactions(currentTx);
+    });
+
+    function loadMore(){
+      alert('Load more — prototype');
+    }
+
+    document.getElementById('newTransferBtn').addEventListener('click', ()=>{
+      const name = prompt('Send to (name or account)');
+      if(!name) return;
+      alert('Would send to ' + name + ' (prototype)');
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      if(!q){ renderTransactions(currentTx); return; }
+      const filtered = currentTx.filter(t => (t.title + ' ' + t.desc).toLowerCase().includes(q) );
+      renderTransactions(filtered);
+    });
+
+    // accessibility focus tweak
+    window.addEventListener('load', ()=> {
+      const qa = document.querySelector('.qa');
+      if(qa) qa.setAttribute('tabindex','0');
+    });
+  </script>
+</body>
+</html>
