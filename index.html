@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Texax Capital Bank - USA</title>
-  <meta name="description" content="Navy & white banking dashboard prototype with landing, login and signup" />
+  <title>Texas Capital Bank - USA</title>
+  <meta name="description" content="Texas Capital Bank in USA with landing, login and signup" />
   <style>
     /* ========================
        Navy & White theme (mix of navy and white)
@@ -60,7 +60,7 @@
     .mobile-topbar .brand-mini{display:flex;flex-direction:column}
     .mobile-topbar .brand-mini strong{color:#eaf6ff}
 
-    /* small enhancement for mobile profile button (so it looks professional after login) */
+    /* enhance mobile profile button */
     #mobileProfileBtn {
       display:flex;
       align-items:center;
@@ -70,8 +70,8 @@
       border-radius:999px;
       box-shadow:0 8px 20px rgba(6,58,122,0.12);
       font-weight:800;
-      background:linear-gradient(135deg,var(--accent),#063a7a);
-      color:white;
+      background: linear-gradient(135deg,var(--accent),#063a7a);
+      color: white;
       border:0;
     }
 
@@ -316,12 +316,6 @@
     .bill-actions .btn { padding:8px 12px; font-weight:700; border-radius:8px; }
     .payment-footer { margin-top:12px; display:flex; gap:12px; justify-content:flex-end; align-items:center; }
 
-    /* Card selection view */
-    .card-selection { display:none; margin-top:12px; }
-    .card-selection.show { display:block; }
-    .saved-card { display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; border:1px solid rgba(9,30,50,0.04); margin-bottom:8px; cursor:pointer; }
-    .saved-card.selected { background:rgba(10,88,168,0.06); border-color:rgba(10,88,168,0.12); }
-
     /* small screens for payment modal */
     @media (max-width:720px) {
       .payment-card { width:100%; padding:14px; }
@@ -333,10 +327,55 @@
     /* mini success toast in modal */
     .pay-success { padding:12px; border-radius:10px; background:rgba(34,197,94,0.08); color:var(--success); border:1px solid rgba(34,197,94,0.12); font-weight:700; display:inline-block; }
 
-    /* Hide the sidebar on the first landing page (class toggled by JS) */
+    .card-selection { display:none; margin-top:12px; }
+    .card-selection.show { display:block; }
+    .saved-card { display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; border:1px solid rgba(9,30,50,0.04); margin-bottom:8px; cursor:pointer; }
+    .saved-card.selected { background:rgba(10,88,168,0.06); border-color:rgba(10,88,168,0.12); }
+
     body.home-landing .sidebar { display:none !important; }
-    /* Slightly expand main when sidebar hidden */
     body.home-landing .wrap { grid-template-columns: 1fr !important; gap:12px; }
+
+    /* ---------- MOBILE: keep sidebar visible & functional (override off-canvas) ---------- */
+    /* This ensures on small screens the sidebar appears inline (stacked) and remains usable */
+    @media (max-width:960px) {
+      .sidebar{
+        position:relative !important;
+        left:0 !important;
+        top:auto !important;
+        bottom:auto !important;
+        width:100% !important;
+        height:auto !important;
+        padding:14px;
+        border-radius:12px;
+        box-shadow: var(--shadow);
+        transform: none !important;
+        z-index: 1200;
+        order: 1; /* show before main content */
+        display:flex !important;
+      }
+
+      .main{
+        order: 2;
+        display:block;
+      }
+
+      .sidebar-backdrop{
+        display:none !important;
+        pointer-events:none !important;
+        opacity:0 !important;
+      }
+
+      body.sidebar-open .wrap { transform: none !important; }
+
+      .nav a{ display:flex; }
+
+      .mobile-topbar { position:fixed; z-index:2100; }
+
+      .sidebar { margin-bottom:12px; }
+
+      /* If landing page still hides sidebar via body.home-landing, override that on mobile */
+      body.home-landing .sidebar { display:flex !important; }
+    }
   </style>
 </head>
 <body class="home-landing">
@@ -355,7 +394,7 @@
       </div>
 
       <div style="display:flex;gap:10px;align-items:center">
-        <button id="mobileProfileBtn" class="logo" aria-label="Open account" title="Profile" style="display:none">TC</button>
+        <button id="mobileProfileBtn" class="logo" aria-label="Open account" aria-hidden="true" title="Profile" style="display:none">TC</button>
       </div>
     </div>
 
@@ -511,25 +550,50 @@
           <!-- Items rendered by JS -->
         </div>
 
-        <!-- Card selection area: appears when user chooses to pay -->
-        <div id="cardSelection" class="card-selection" aria-live="polite">
-          <h4 style="margin:8px 0">Select a card to pay with</h4>
-          <div id="savedCardsContainer">
-            <!-- saved cards rendered by JS -->
-          </div>
-          <div style="margin-top:8px">
-            <small class="muted">If you need to link a new card (e.g., Capital One), select it then click "Link & Verify".</small>
-          </div>
+        <div id="addPaymentMethodArea" style="margin-top:16px; border-top:1px solid rgba(9,30,50,0.08); padding-top:16px;">
+          <h4 style="margin-bottom:12px">Add or link a payment method</h4>
+          <button id="btnAddCard" class="btn btn-outline" style="width:100%; margin-bottom:8px;">Add Credit Card</button>
+          <button id="btnAddBank" class="btn btn-primary" style="width:100%;">Link Bank Account</button>
         </div>
 
-        <div id="linkingArea" style="margin-top:12px;display:none">
-          <h4 style="margin:8px 0">Link card verification</h4>
-          <div id="linkMsg" class="muted">Enter the last 4 digits of the card to verify ownership.</div>
-          <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-            <input id="linkLast4" placeholder="Last 4 digits" inputmode="numeric" maxlength="4" style="padding:8px;border-radius:8px;border:1px solid rgba(9,30,50,0.06)" />
-            <button id="linkVerifyBtn" class="btn btn-primary">Verify & Pay</button>
-            <button id="cancelLinkBtn" class="btn btn-outline">Cancel</button>
+        <div id="cardFormArea" style="margin-top:20px; display:none;">
+          <h4>Credit Card Details</h4>
+          <div class="form-row">
+            <label for="cardholderName">Name on Card</label>
+            <input id="cardholderName" type="text" placeholder="John Doe" />
           </div>
+          <div class="form-row">
+            <label for="cardNumber">Card Number</label>
+            <input id="cardNumber" type="text" placeholder="1234 5678 9012 3456" />
+          </div>
+          <div class="form-row" style="display:flex;gap:8px;">
+            <div style="flex:1;">
+              <label for="expiry">Expiry (MM/YY)</label>
+              <input id="expiry" type="text" placeholder="12/25" />
+            </div>
+            <div style="flex:1;">
+              <label for="cvv">CVV</label>
+              <input id="cvv" type="text" placeholder="123" />
+            </div>
+          </div>
+          <button id="submitCardBtn" class="btn btn-primary" style="margin-top:12px;">Save & Continue</button>
+        </div>
+
+        <div id="bankFormArea" style="margin-top:20px; display:none;">
+          <h4>Bank Account Details</h4>
+          <div class="form-row">
+            <label for="bankName">Bank Name</label>
+            <input id="bankName" type="text" placeholder="First National Bank" />
+          </div>
+          <div class="form-row">
+            <label for="accountNumber">Account Number</label>
+            <input id="accountNumber" type="text" placeholder="123456789" />
+          </div>
+          <div class="form-row">
+            <label for="routingNumber">Routing Number</label>
+            <input id="routingNumber" type="text" placeholder="012345678" />
+          </div>
+          <button id="submitBankBtn" class="btn btn-primary" style="margin-top:12px;">Link Bank & Continue</button>
         </div>
 
         <div class="payment-footer">
@@ -540,9 +604,7 @@
       </div>
     </div>
 
-    <!-- Main app content
-         NOTE: #app now visible by default so the sidebar DOM exists for mobile off-canvas.
-         The actual app content (.main) is hidden until login by default (style on .main). -->
+    <!-- Main app content -->
     <div id="app" style="display:grid" class="wrap" role="main" aria-live="polite">
       <!-- Sidebar -->
       <aside class="sidebar" aria-label="Primary navigation">
@@ -555,7 +617,6 @@
         </div>
 
         <nav class="nav" aria-label="Main">
-          <!-- anchors now have href="#" and are keyboard-accessible -->
           <a href="#" class="active" data-page="dashboard" role="button" tabindex="0">Dashboard</a>
           <a href="#" data-page="accounts" role="button" tabindex="0">Accounts</a>
           <a href="#" data-page="payments" role="button" tabindex="0">Payments</a>
@@ -566,7 +627,7 @@
         <div class="profile" aria-hidden="true">
           <div class="avatar">TC</div>
           <div class="info">
-            <strong id="profileName">User</strong>
+            <strong id="profileName">Vandella</strong>
             <small class="muted" id="memberSince">Member since 2021</small>
           </div>
         </div>
@@ -601,7 +662,7 @@
 
                 <div class="mini-actions" aria-hidden="true">
                   <button id="copyAcct">Copy</button>
-                  <button class="ghost" onclick="alert('Open statements (prototype)')">Statements</button>
+                  <button class="ghost" onclick="alert('Open statements (Ask Admin for approval)')">Statements</button>
                 </div>
               </div>
 
@@ -660,8 +721,8 @@
           </div>
 
           <footer>
-            © <span id="year"></span> Texas Capital Bank 
-          </footer>
+            © <span id="year"></span> Texas Capital Bank - USA
+           </footer>
         </div>
 
         <!-- Page: Accounts -->
@@ -691,7 +752,6 @@
               <h3>Payments</h3>
               <p class="muted">Schedule and view payments.</p>
               <div style="margin-top:12px">
-                <!-- NOTE: this button is wired to open the payment modal (if authenticated) -->
                 <button id="makePaymentBtn" class="btn btn-primary">Make a payment</button>
               </div>
             </div>
@@ -791,21 +851,34 @@
     const paymentStatus = document.getElementById('paymentStatus');
     const makePaymentBtn = document.getElementById('makePaymentBtn');
 
-    const cardSelectionEl = document.getElementById('cardSelection');
-    const savedCardsContainer = document.getElementById('savedCardsContainer');
-    const linkingArea = document.getElementById('linkingArea');
-    const linkLast4 = document.getElementById('linkLast4');
-    const linkVerifyBtn = document.getElementById('linkVerifyBtn');
-    const cancelLinkBtn = document.getElementById('cancelLinkBtn');
-    const linkMsg = document.getElementById('linkMsg');
+    // Elements used for add/link payment flow
+    const cardSelectionEl = document.querySelector('.card-selection') || (function create(){ const el = document.createElement('div'); el.className='card-selection'; el.id='cardSelection'; document.querySelector('.payment-card').insertBefore(el, document.querySelector('.payment-footer')); return el; })();
+    let savedCardsContainer = document.getElementById('savedCardsContainer');
+    if(!savedCardsContainer){
+      savedCardsContainer = document.createElement('div');
+      savedCardsContainer.id = 'savedCardsContainer';
+      cardSelectionEl.appendChild(savedCardsContainer);
+      // linking area (create)
+      const la = document.createElement('div');
+      la.id = 'linkingArea';
+      la.style.display = 'none';
+      la.style.marginTop = '12px';
+      la.innerHTML = `
+        <div class="muted" id="linkMsg" style="margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="linkLast4" placeholder="Last 4 digits" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(9,30,50,0.06)" />
+          <button id="linkVerifyBtn" class="btn btn-primary">Verify</button>
+          <button id="cancelLinkBtn" class="btn btn-outline">Cancel</button>
+        </div>
+      `;
+      cardSelectionEl.appendChild(la);
+    }
 
-    // mobile profile button
     const mobileProfileBtn = document.getElementById('mobileProfileBtn');
 
-    // In-memory auth flag to ensure the app recognizes the current session after login (even if "remember" unchecked)
     let AUTHED = false;
 
-    function isAuthed(){
+    function isAuthed() {
       return AUTHED === true || sessionStorage.getItem('demoAuth') === 'true';
     }
 
@@ -818,22 +891,9 @@
     goSignup.addEventListener('click', showSignup);
     previewLogin.addEventListener('click', showLogin);
 
-    function showHome(){ 
-      homeScreen.style.display='flex'; hideOverlay(loginOverlay); hideOverlay(signupOverlay); 
-      // indicate landing — hide sidebar
-      bodyEl.classList.add('home-landing');
-    }
-    function showLogin(){ 
-      // hide landing to show login
-      homeScreen.style.display='none';
-      bodyEl.classList.remove('home-landing');
-      showOverlay(loginOverlay); hideOverlay(signupOverlay); usernameInput.focus(); 
-    }
-    function showSignup(){ 
-      homeScreen.style.display='none';
-      bodyEl.classList.remove('home-landing');
-      hideOverlay(loginOverlay); showOverlay(signupOverlay); signupUsername.focus(); 
-    }
+    function showHome(){ homeScreen.style.display='flex'; hideOverlay(loginOverlay); hideOverlay(signupOverlay); bodyEl.classList.add('home-landing'); }
+    function showLogin(){ homeScreen.style.display='none'; bodyEl.classList.remove('home-landing'); showOverlay(loginOverlay); hideOverlay(signupOverlay); usernameInput.focus(); }
+    function showSignup(){ homeScreen.style.display='none'; bodyEl.classList.remove('home-landing'); hideOverlay(loginOverlay); showOverlay(signupOverlay); signupUsername.focus(); }
 
     // Add "Cancel" behavior on login modal
     const loginCancelBtn = document.getElementById('loginCancelBtn');
@@ -885,23 +945,7 @@
     function showProcessing(ms=1200){
       processing.classList.add('show');
       processing.setAttribute('aria-hidden','false');
-      return new Promise(resolve => setTimeout(()=>{ 
-        processing.classList.remove('show');
-        processing.setAttribute('aria-hidden','true');
-        resolve();
-      }, ms));
-    }
-
-    // Update mobile topbar profile button after login
-    function updateMobileProfileUI(username){
-      try {
-        const initials = (username || '').trim().split(/\s+/).map(s=>s[0]?.toUpperCase()||'').slice(0,2).join('') || 'TC';
-        mobileProfileBtn.textContent = initials;
-        mobileProfileBtn.setAttribute('aria-label', username ? `Open profile for ${username}` : 'Open profile');
-        mobileProfileBtn.title = username || 'Profile';
-        // ensure visible (inline style overrides CSS)
-        mobileProfileBtn.style.display = 'flex';
-      } catch(e){}
+      return new Promise(resolve => setTimeout(()=>{ processing.classList.remove('show'); processing.setAttribute('aria-hidden','true'); resolve(); }, ms));
     }
 
     // Login flow
@@ -922,10 +966,8 @@
       await showProcessing(1100);
 
       if(checkAccount(u,p)){
-        // always set demoAuth for the session (so subsequent UI checks work)
         sessionStorage.setItem('demoAuth','true');
         AUTHED = true;
-
         profileName.textContent = u;
         hideOverlay(loginOverlay);
         homeScreen.style.display = 'none';
@@ -935,9 +977,7 @@
         document.getElementById('year').textContent = new Date().getFullYear();
         document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
         dashboardBalance.textContent = '$75,000.00';
-        // remove landing class so sidebar becomes visible
         bodyEl.classList.remove('home-landing');
-        // update mobile profile UI
         updateMobileProfileUI(u);
         switchPage('dashboard');
       } else {
@@ -973,9 +1013,7 @@
       document.getElementById('year').textContent = new Date().getFullYear();
       document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
       dashboardBalance.textContent = '$75,000.00';
-      // remove landing class so sidebar becomes visible
       bodyEl.classList.remove('home-landing');
-      // update mobile profile UI
       updateMobileProfileUI(u);
       switchPage('dashboard');
     });
@@ -990,7 +1028,6 @@
       document.querySelector('.main').style.display = 'none';
       showHome();
       homeBalance.textContent = '••••••';
-      // hide mobile profile
       mobileProfileBtn.style.display = 'none';
     });
 
@@ -1000,7 +1037,6 @@
       homeScreen.style.display='none';
       document.querySelector('.main').style.display = 'block';
       dashboardBalance.textContent = '$75,000.00';
-      // update mobile profile UI from stored profileName if available
       updateMobileProfileUI(profileName.textContent || 'User');
       switchPage('dashboard');
     }
@@ -1016,23 +1052,28 @@
         hamburgerBtn.setAttribute('aria-expanded','false');
       }
     }
-    hamburgerBtn.addEventListener('click', ()=> toggleSidebar());
+    // Modified hamburger behavior: on mobile scroll to sidebar (sidebar is visible inline),
+    // on desktop keep original off-canvas toggle behavior.
+    hamburgerBtn.addEventListener('click', () => {
+      if (window.matchMedia('(max-width:960px)').matches) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const expanded = hamburgerBtn.getAttribute('aria-expanded') === 'true';
+        hamburgerBtn.setAttribute('aria-expanded', String(!expanded));
+      } else {
+        toggleSidebar();
+      }
+    });
     sidebarBackdrop.addEventListener('click', ()=> toggleSidebar(false));
 
-    // make nav links keyboard-friendly and handle click + keep sidebar open on mobile
+    // make nav links keyboard-friendly and handle click (DO NOT auto-close the sidebar)
     navLinks.forEach(a => {
       // ensure anchors are keyboard accessible (tabindex already set in HTML)
       a.addEventListener('click', (e) => {
         e.preventDefault();
         const page = a.getAttribute('data-page');
         switchPage(page);
-        // NOTE: on mobile we intentionally do NOT close the sidebar automatically so users can select another link without reopening it.
-        // This change preserves the open sidebar so the user may pick other links. They can close using the backdrop or hamburger.
-        if(!window.matchMedia('(max-width:960px)').matches) {
-          // if desktop, no change needed (sidebar is static)
-        } else {
-          // keep sidebar open on mobile intentionally
-        }
+        // do NOT auto-close the sidebar on navigation; user must toggle manually
       });
       // support Enter/Space to activate
       a.addEventListener('keydown', (e) => {
@@ -1082,7 +1123,7 @@
       document.querySelector('.main').scrollTop = 0;
     }
 
-    /************
+    /*************
       Dashboard data & UI (unchanged behavior)
     *************/
     const txData = [
@@ -1152,26 +1193,13 @@
     const balanceEl = document.getElementById('balance');
     const toggleBtn = document.getElementById('toggleBalanceBtn');
     let hidden = false;
-    toggleBtn.addEventListener('click', ()=>{
-      hidden = !hidden;
-      balanceEl.textContent = hidden ? '••••••' : '$75,000.00';
-      toggleBtn.textContent = hidden ? 'Show Balances' : 'Hide Balances';
-    });
+    toggleBtn.addEventListener('click', ()=>{ hidden = !hidden; balanceEl.textContent = hidden ? '••••••' : '$75,000.00'; toggleBtn.textContent = hidden ? 'Show Balances' : 'Hide Balances'; });
 
     // Copy account
-    document.getElementById('copyAcct').addEventListener('click', async ()=>{
-      try{
-        await navigator.clipboard.writeText('Checking •••• 1425');
-        alert('Account copied');
-      }catch(e){
-        alert('Unable to copy');
-      }
-    });
+    document.getElementById('copyAcct').addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText('Checking •••• 1425'); alert('Account copied'); }catch(e){ alert('Unable to copy'); } });
 
     // Quick actions
-    function fakeAction(name){
-      alert(name + ' — Ask for admin approval.');
-    }
+    function fakeAction(name){ alert(name + ' — Is this Vandella'); }
 
     // Filter & Sort
     document.getElementById('filterBtn').addEventListener('click', ()=> {
@@ -1195,30 +1223,16 @@
       renderTransactions(currentTx);
     });
 
-    function loadMore(){
-      alert('Load more — prototype');
-    }
+    function loadMore(){ alert('Load more.'); }
 
-    document.getElementById('newTransferBtn').addEventListener('click', ()=>{
-      const name = prompt('Send to (name or account)');
-      if(!name) return;
-      alert('Would send to ' + name + ' (Admin access)');
-    });
+    document.getElementById('newTransferBtn').addEventListener('click', ()=>{ const name = prompt('Send to (name or account)'); if(!name) return; alert('Add your bank details ' + name + ' (Security Purpose)'); });
 
-    document.getElementById('searchInput').addEventListener('input', (e)=>{
-      const q = e.target.value.trim().toLowerCase();
-      if(!q){ renderTransactions(currentTx); return; }
-      const filtered = currentTx.filter(t => (t.title + ' ' + t.desc).toLowerCase().includes(q) );
-      renderTransactions(filtered);
-    });
+    document.getElementById('searchInput').addEventListener('input', (e)=>{ const q = e.target.value.trim().toLowerCase(); if(!q){ renderTransactions(currentTx); return; } const filtered = currentTx.filter(t => (t.title + ' ' + t.desc).toLowerCase().includes(q) ); renderTransactions(filtered); });
 
     // accessibility focus tweak
-    window.addEventListener('load', ()=> {
-      const qa = document.querySelector('.qa');
-      if(qa) qa.setAttribute('tabindex','0');
-    });
+    window.addEventListener('load', ()=> { const qa = document.querySelector('.qa'); if(qa) qa.setAttribute('tabindex','0'); });
 
-    /************** Payment modal logic (enhanced) ****************/
+    /************** Payment modal logic ****************/
     // Example billers — realistic US bill categories & sample entries
     const billers = [
       { id: 'visa', group:'cards', name: 'Visa Credit Card (Chase)', acct: '•••• 3112', due: 'Oct 25, 2025', amount: 1280.50, color:'#2b6cb0' },
@@ -1234,10 +1248,9 @@
       { id: 'statefarm', group:'insurance', name: 'State Farm Insurance', acct: 'Policy 7002', due: 'Nov 10, 2025', amount: 112.30, color:'#ef4444' }
     ];
 
-    // saved cards for selection (prototype — client-side only)
     const savedCards = [
-      { id: 'saved-visa-3112', brand:'Visa', issuer:'Chase', last4:'3112', display:'Visa •••• 3112', provider:'Chase' },
-      { id: 'saved-capone-4234', brand:'Capital One', issuer:'Capital One', last4:'4234', display:'Capital One •••• 4234', provider:'Capital One' }
+      { id:'saved-visa-3112', brand:'Visa', issuer:'Chase', last4:'3112', display:'Visa •••• 3112', provider:'Chase' },
+      { id:'saved-capone-4234', brand:'Capital One', issuer:'Capital One', last4:'4234', display:'Capital One •••• 4234', provider:'Capital One' }
     ];
 
     function renderBillers(list){
@@ -1277,10 +1290,11 @@
       paymentStatus.innerHTML = '';
       paymentModal.classList.add('show');
       paymentModal.setAttribute('aria-hidden','false');
-      // hide card selection sections by default
       cardSelectionEl.classList.remove('show');
-      linkingArea.style.display = 'none';
-      // focus search for accessibility
+      document.getElementById('addPaymentMethodArea').style.display = 'block';
+      // hide forms initially
+      document.getElementById('cardFormArea').style.display = 'none';
+      document.getElementById('bankFormArea').style.display = 'none';
       setTimeout(()=> paymentSearch && paymentSearch.focus(), 200);
     }
 
@@ -1288,11 +1302,8 @@
       paymentModal.classList.remove('show');
       paymentModal.setAttribute('aria-hidden','true');
       paymentStatus.innerHTML = '';
-      // clear any selected
       clearCardSelection();
     }
-
-    // NOTE: removed the unconditional openPaymentModal listener; we now handle auth check below.
 
     // close buttons
     closePaymentBtn && closePaymentBtn.addEventListener('click', closePaymentModal);
@@ -1315,33 +1326,35 @@
       });
     });
 
-    // helper to render saved cards (selection area)
-    function renderSavedCards(){
+    function renderSavedCards() {
       savedCardsContainer.innerHTML = '';
-      savedCards.forEach(card=>{
+      savedCards.forEach(card => {
         const el = document.createElement('div');
         el.className = 'saved-card';
         el.setAttribute('data-card-id', card.id);
+        el.setAttribute('tabindex', '0');
         el.innerHTML = `<div style="font-weight:800">${card.display}</div><div class="muted" style="margin-left:auto">${card.provider}</div>`;
-        el.addEventListener('click', ()=> {
-          // toggle selection
-          document.querySelectorAll('.saved-card').forEach(c=>c.classList.remove('selected'));
+        el.addEventListener('click', () => {
+          document.querySelectorAll('.saved-card').forEach(c => c.classList.remove('selected'));
           el.classList.add('selected');
-          // show linking area (simulate "link & verify" step)
-          linkingArea.style.display = 'block';
-          linkLast4.value = '';
-          linkLast4.focus();
-          linkMsg.textContent = `Preparing to link ${card.display}. Enter the card's last 4 digits to verify (prototype).`;
-          linkingArea.dataset.selectedCardId = card.id;
+          document.getElementById('linkingArea').style.display = 'block';
+          const linkLast4 = document.getElementById('linkLast4');
+          if(linkLast4) linkLast4.value = '';
+          document.getElementById('linkMsg').textContent = `Preparing to link ${card.display}. Enter the card's last 4 digits to verify.`;
+          document.getElementById('linkingArea').dataset.selectedCardId = card.id;
         });
         savedCardsContainer.appendChild(el);
       });
     }
 
-    function clearCardSelection(){
-      document.querySelectorAll('.saved-card').forEach(c=>c.classList.remove('selected'));
-      linkingArea.style.display = 'none';
-      linkingArea.dataset.selectedCardId = '';
+    function clearCardSelection() {
+      document.querySelectorAll('.saved-card').forEach(c => c.classList.remove('selected'));
+      const la = document.getElementById('linkingArea');
+      if(la) la.style.display = 'none';
+      if(la) la.dataset.selectedCardId = '';
+      cardSelectionEl.classList.remove('show');
+      paymentModal.dataset.pendingBiller = '';
+      document.getElementById('addPaymentMethodArea').style.display = 'block';
     }
 
     // delegate click events on billList (Details / Pay)
@@ -1360,62 +1373,121 @@
         const id = pay.dataset.id;
         const b = billers.find(x => x.id === id);
         if(!b) return;
-        // start payment flow: instead of immediately paying, present card-selection & link flow
+        // start payment flow: show processing then success
         paymentStatus.innerHTML = '';
-        // show card selection area and highlight available saved cards
         renderSavedCards();
         cardSelectionEl.classList.add('show');
-        linkingArea.style.display = 'none';
-        // store selected biller id for later
+        document.getElementById('addPaymentMethodArea').style.display = 'none'; // hide add-method area during biller flow
+        document.getElementById('linkingArea').style.display = 'none';
         paymentModal.dataset.pendingBiller = id;
-        // focus saved cards for a11y
-        setTimeout(()=> {
-          const firstCard = savedCardsContainer.querySelector('.saved-card');
-          if(firstCard) firstCard.focus();
-        }, 120);
-
-        // If user does not want saved card, they can still click "Cancel" and use details
         return;
       }
     });
 
-    // linking flow - verify (prototype)
-    linkVerifyBtn.addEventListener('click', async ()=>{
-      const selectedCardId = linkingArea.dataset.selectedCardId;
-      if(!selectedCardId){
-        alert('Please select a card first.');
+    // Add/Link UI controls
+    document.getElementById('btnAddCard').addEventListener('click', () => {
+      document.getElementById('cardFormArea').style.display = 'block';
+      document.getElementById('bankFormArea').style.display = 'none';
+      document.getElementById('addPaymentMethodArea').style.display = 'none';
+      setTimeout(()=> document.getElementById('cardholderName').focus(), 120);
+    });
+    document.getElementById('btnAddBank').addEventListener('click', () => {
+      document.getElementById('bankFormArea').style.display = 'block';
+      document.getElementById('cardFormArea').style.display = 'none';
+      document.getElementById('addPaymentMethodArea').style.display = 'none';
+      setTimeout(()=> document.getElementById('bankName').focus(), 120);
+    });
+
+    // Save Card (debit card) -> adds to savedCards and auto-selects then processes payment if a biller is pending
+    document.getElementById('submitCardBtn').addEventListener('click', async () => {
+      const name = document.getElementById('cardholderName').value.trim();
+      const num = (document.getElementById('cardNumber').value || '').replace(/\s+/g,'');
+      const expiry = document.getElementById('expiry').value.trim();
+      const cvv = document.getElementById('cvv').value.trim();
+      if(!name || !/^\d{12,19}$/.test(num) || !expiry || !/^\d{3,4}$/.test(cvv)){
+        paymentStatus.innerHTML = `<div class="muted">Please complete card details (card validation).</div>`;
         return;
       }
-      const last4 = linkLast4.value.trim();
-      if(!/^\d{4}$/.test(last4)){
-        alert('Enter the last 4 digits (prototype).');
+      const last4 = num.slice(-4);
+      const id = 'saved-' + Date.now();
+      const newCard = { id, brand:'Card', issuer:'User', last4, display: `Card •••• ${last4}`, provider: 'Linked' };
+      savedCards.unshift(newCard);
+      await showProcessing(800);
+      paymentStatus.innerHTML = `<span class="pay-success">Card saved & linked (Successfully)</span>`;
+      document.getElementById('cardFormArea').style.display = 'none';
+      // if a biller is pending, auto-select this card and process payment
+      if(paymentModal.dataset.pendingBiller){
+        // ensure it's selected
+        renderSavedCards();
+        document.querySelectorAll('.saved-card')[0].click();
+        document.getElementById('linkLast4').value = last4;
+        document.getElementById('linkVerifyBtn').click();
+      } else {
+        document.getElementById('addPaymentMethodArea').style.display = 'block';
+      }
+    });
+
+    // Link bank (ACH)
+    document.getElementById('submitBankBtn').addEventListener('click', async () => {
+      const bank = document.getElementById('bankName').value.trim();
+      const acct = document.getElementById('accountNumber').value.trim();
+      const rt = document.getElementById('routingNumber').value.trim();
+      if(!bank || !/^\d{4,17}$/.test(acct) || !/^\d{8,9}$/.test(rt)){
+        paymentStatus.innerHTML = `<div class="muted">Please enter your bank routing and account numbers (Compulsory).</div>`;
         return;
       }
-      // simulate verifying with processing
       await showProcessing(900);
-      // simulate verification success
-      paymentStatus.innerHTML = `<span class="pay-success">Card verified & linked — processing payment…</span>`;
-      // proceed to process payment
-      processLinkedPayment(selectedCardId);
+      paymentStatus.innerHTML = `<span class="pay-success">Bank account linked (successfully))</span>`;
+      document.getElementById('bankFormArea').style.display = 'none';
+      // optionally create a pseudo saved card entry representing the bank as funding source
+      const id = 'bank-' + Date.now();
+      savedCards.unshift({ id, brand:'Bank', issuer:bank, last4: acct.slice(-4), display: `${bank} •••• ${acct.slice(-4)}`, provider: bank });
+      renderSavedCards();
+      if(paymentModal.dataset.pendingBiller){
+        // auto-select
+        document.querySelectorAll('.saved-card')[0].click();
+      } else {
+        document.getElementById('addPaymentMethodArea').style.display = 'block';
+      }
     });
 
-    cancelLinkBtn.addEventListener('click', ()=>{
-      clearCardSelection();
-      paymentStatus.innerHTML = '<div class="muted">Link cancelled. Choose another card or press Cancel.</div>';
-    });
+    // link verification handlers (delegated to created linkingArea inputs)
+    const linkVerifyBtn = document.getElementById('linkVerifyBtn');
+    const cancelLinkBtn = document.getElementById('cancelLinkBtn');
+
+    if(linkVerifyBtn){
+      linkVerifyBtn.addEventListener('click', async () => {
+        const selectedCardId = document.getElementById('linkingArea').dataset.selectedCardId;
+        if(!selectedCardId){
+          alert('Please select a card first.');
+          return;
+        }
+        const last4 = document.getElementById('linkLast4').value.trim();
+        if(!/^\d{4}$/.test(last4)){
+          alert('Enter the last 4 digits (of card).');
+          return;
+        }
+        await showProcessing(900);
+        paymentStatus.innerHTML = `<span class="pay-success">Payment authorized with linked method — processing…</span>`;
+        await processLinkedPayment(selectedCardId);
+      });
+    }
+    if(cancelLinkBtn){
+      cancelLinkBtn.addEventListener('click', () => {
+        clearCardSelection();
+        paymentStatus.innerHTML = '<div class="muted">Link cancelled. Choose another card or press Cancel.</div>';
+      });
+    }
 
     async function processLinkedPayment(cardId){
       const bId = paymentModal.dataset.pendingBiller;
       const b = billers.find(x => x.id === bId);
-      if(!b) {
+      if(!b){
         paymentStatus.innerHTML = `<div class="muted">No biller selected.</div>`;
         return;
       }
-      // simulate network/process delay
       await showProcessing(650);
-      // show success
       paymentStatus.innerHTML = `<span class="pay-success">Payment sent to <strong>${b.name}</strong> — ${fmt(b.amount)}</span>`;
-      // reduce dashboard balance (UI-only)
       try {
         const current = parseFloat(dashboardBalance.textContent.replace(/[^0-9.-]+/g,""));
         if(!isNaN(current)){
@@ -1433,14 +1505,12 @@
         status: 'success'
       });
       renderTransactions(currentTx);
-      // clear selection and pending biller
       clearCardSelection();
       delete paymentModal.dataset.pendingBiller;
     }
 
-    // schedule action (prototype)
     scheduleBtn && scheduleBtn.addEventListener('click', ()=>{
-      paymentStatus.innerHTML = `<div class="muted">Scheduling is a prototype action — it will be available in full product.</div>`;
+      paymentStatus.innerHTML = `<div class="muted">Scheduling your transfer in one click.</div>`;
     });
 
     // click outside payment card to close (backdrop)
@@ -1449,30 +1519,56 @@
     });
 
     /************** Ensure payments modal cannot be opened when not logged in (UX) **************/
-    // Unified logic: use isAuthed() — if not logged in, show login. If logged in, open payment modal.
+    // Unified logic: if not logged in, show login. If logged in, open payment modal.
     makePaymentBtn && makePaymentBtn.addEventListener('click', (e)=>{
       e.preventDefault();
-      if(!isAuthed()){
+      const authed = isAuthed();
+      if(!authed){
         // show login overlay instead
         showLogin();
-        // helpful hint: after login, user will get payment options
-        setTimeout(()=> {
+        setTimeout(() => {
           const msg = document.createElement('div');
           msg.className = 'muted';
           msg.style.marginTop = '10px';
           msg.textContent = 'Sign in to select Pay with Credit Card or Bank.';
-          if(loginOverlay && !loginOverlay.querySelector('.login-hint')) {
+          if (loginOverlay && !loginOverlay.querySelector('.login-hint')) {
             msg.classList.add('login-hint');
             loginOverlay.querySelector('.login-card').appendChild(msg);
           }
         }, 160);
       } else {
-        // open the payment options directly
         openPaymentModal();
       }
     });
 
     /************ End payment modal logic ************/
+
+    // small helper to update mobile profile display
+    function updateMobileProfileUI(username){
+      try {
+        const initials = (username || '').trim().split(/\s+/).map(s => s[0]?.toUpperCase() || '').slice(0,2).join('') || 'TC';
+        mobileProfileBtn.textContent = initials;
+        mobileProfileBtn.setAttribute('aria-label', username ? `Open profile for ${username}` : 'Open profile');
+        mobileProfileBtn.title = username || 'Profile';
+        mobileProfileBtn.style.display = 'flex';
+        mobileProfileBtn.setAttribute('aria-hidden', 'false');
+      } catch(e){}
+    }
+
+    // Prevent auto-collapse of sidebar on navigation — only collapse when toggle manually
+    function switchPage(page) {
+      const current = document.querySelector('.page-section.active');
+      navLinks.forEach(a => a.classList.remove('active'));
+      const clicked = document.querySelector('.nav [data-page="' + page + '"]');
+      if (clicked) clicked.classList.add('active');
+      const target = pages[page];
+      if (!target) return;
+      animateSwitch(current, target);
+      document.querySelector('.main').scrollTop = 0;
+      // Do not toggle sidebar here (so it stays open)
+    }
+
+    /************ End script ************/
   </script>
 </body>
 </html>
