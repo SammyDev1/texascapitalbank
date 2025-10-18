@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Bank Dashboard — Navy & White Prototype</title>
+  <title>Texax Capital Bank - USA</title>
   <meta name="description" content="Navy & white banking dashboard prototype with landing, login and signup" />
   <style>
     /* ========================
@@ -60,6 +60,21 @@
     .mobile-topbar .brand-mini{display:flex;flex-direction:column}
     .mobile-topbar .brand-mini strong{color:#eaf6ff}
 
+    /* small enhancement for mobile profile button (so it looks professional after login) */
+    #mobileProfileBtn {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      box-shadow:0 8px 20px rgba(6,58,122,0.12);
+      font-weight:800;
+      background:linear-gradient(135deg,var(--accent),#063a7a);
+      color:white;
+      border:0;
+    }
+
     /* Landing / home content */
     .home {
       display:flex; gap:24px; align-items:center; justify-content:space-between; margin-bottom:18px;
@@ -102,6 +117,7 @@
       display:flex;flex-direction:column;gap:12px;
       color: #0b2b44;
       transition:transform .28s ease,left .28s ease;
+      z-index:1200; /* default stacking on desktop */
     }
     .brand{display:flex;gap:12px;align-items:center}
     .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#063a7a);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px}
@@ -112,6 +128,7 @@
     .nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:var(--muted);text-decoration:none;font-weight:700;cursor:pointer}
     .nav a.active{background:rgba(10,88,168,0.08);color:var(--accent)}
     .nav a:hover{background:rgba(10,88,168,0.05);color:var(--accent)}
+    .nav a:focus{outline:3px solid rgba(10,88,168,0.12);outline-offset:3px}
 
     .profile{margin-top:auto;display:flex;gap:12px;align-items:center;padding-top:8px;border-top:1px dashed rgba(9,30,50,0.04)}
     .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#eff7ff,#dff1ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy-2)}
@@ -197,11 +214,12 @@
       /* make sidebar off-canvas */
       .sidebar{
         position:fixed;left:-100%;top:0;bottom:0;width:280px;height:100vh;padding:18px;border-radius:0;box-shadow:0 20px 60px rgba(2,8,24,0.6);
+        z-index:1501; /* above backdrop and home overlay */
       }
       /* when body has sidebar-open class, push it in */
       body.sidebar-open .sidebar{ left:0; transform:translateX(0); }
       /* backdrop */
-      .sidebar-backdrop{ display:block; position:fixed; inset:0; z-index:1400; background:rgba(0,0,0,0.45); opacity:0; transition:opacity .18s ease; pointer-events:none; }
+      .sidebar-backdrop{ display:block; position:fixed; inset:0; z-index:1500; background:rgba(0,0,0,0.45); opacity:0; transition:opacity .18s ease; pointer-events:none; }
       body.sidebar-open .sidebar-backdrop{ opacity:1; pointer-events:auto; }
 
       /* push main content slightly to the right when sidebar is open (optional) */
@@ -251,9 +269,77 @@
 
     /* Ensure overlays are scrollable on small screens */
     .auth-screen, .home-screen { -webkit-overflow-scrolling: touch; overflow:auto; }
+
+    /* Additional mobile landing tweaks: stack content nicely and keep preview card readable */
+    .home-screen > div { width:100%; max-width:var(--max-width); display:flex; align-items:center; gap:24px; padding:20px; }
+    @media (max-width:720px){
+      .home-screen > div { flex-direction:column; align-items:stretch; gap:12px; padding:14px; }
+      .home-left { order:1; }
+      .home-right { order:2; width:100%; max-width:none; }
+      .home-left h1 { font-size:20px; }
+      .home-left p { font-size:14px; }
+      .home-right { padding:14px; border-radius:12px; }
+    }
+
+    @media (max-width:420px){
+      .home-left h1 { font-size:18px; }
+      .eyebrow { font-size:12px; padding:5px 8px; }
+      .home-left p { font-size:13px; }
+      .mobile-topbar { top:8px; left:8px; right:8px; }
+    }
+
+    /* ---------- Payment modal styles ---------- */
+    .payment-modal {
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:10020;
+      background: linear-gradient(180deg, rgba(2,8,16,0.72), rgba(2,8,16,0.85)); padding:16px;
+      visibility:hidden; opacity:0; transition:opacity .18s ease, visibility .18s ease;
+    }
+    .payment-modal.show { visibility:visible; opacity:1; }
+    .payment-card {
+      width:760px; max-width:96%; max-height:90vh; overflow:auto;
+      background:var(--card-white); border-radius:14px; padding:18px; box-shadow:0 30px 80px rgba(2,8,24,0.6); border:1px solid rgba(9,30,50,0.06);
+      color:var(--navy-2);
+    }
+    .payment-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .payment-top .title { display:flex; gap:12px; align-items:center; }
+    .payment-search { display:flex; gap:8px; align-items:center; }
+    .payment-search input { padding:8px 10px; border-radius:10px; border:1px solid rgba(9,30,50,0.06); width:260px; }
+    .bill-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+    .bill-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border-radius:10px; border:1px solid rgba(9,30,50,0.04); background:var(--card-white); }
+    .bill-meta { display:flex; gap:12px; align-items:center; min-width:0; flex:1; }
+    .bill-avatar { width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:800; color:white; }
+    .bill-info { min-width:0; }
+    .bill-info strong { display:block; font-size:15px; }
+    .bill-info small { color:var(--muted); font-size:13px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .bill-right { display:flex; gap:12px; align-items:center; }
+    .bill-amount { font-weight:800; min-width:110px; text-align:right; }
+    .bill-actions .btn { padding:8px 12px; font-weight:700; border-radius:8px; }
+    .payment-footer { margin-top:12px; display:flex; gap:12px; justify-content:flex-end; align-items:center; }
+
+    /* Card selection view */
+    .card-selection { display:none; margin-top:12px; }
+    .card-selection.show { display:block; }
+    .saved-card { display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; border:1px solid rgba(9,30,50,0.04); margin-bottom:8px; cursor:pointer; }
+    .saved-card.selected { background:rgba(10,88,168,0.06); border-color:rgba(10,88,168,0.12); }
+
+    /* small screens for payment modal */
+    @media (max-width:720px) {
+      .payment-card { width:100%; padding:14px; }
+      .payment-search input { width:160px; }
+      .bill-avatar { width:44px; height:44px; font-size:14px; }
+      .bill-amount { min-width:90px; font-size:14px; }
+    }
+
+    /* mini success toast in modal */
+    .pay-success { padding:12px; border-radius:10px; background:rgba(34,197,94,0.08); color:var(--success); border:1px solid rgba(34,197,94,0.12); font-weight:700; display:inline-block; }
+
+    /* Hide the sidebar on the first landing page (class toggled by JS) */
+    body.home-landing .sidebar { display:none !important; }
+    /* Slightly expand main when sidebar hidden */
+    body.home-landing .wrap { grid-template-columns: 1fr !important; gap:12px; }
   </style>
 </head>
-<body>
+<body class="home-landing">
   <div class="container" id="appContainer">
     <!-- Mobile top bar -->
     <div class="mobile-topbar" role="navigation" aria-hidden="false">
@@ -269,7 +355,7 @@
       </div>
 
       <div style="display:flex;gap:10px;align-items:center">
-        <button id="mobileProfileBtn" class="logo" aria-label="Open account">TC</button>
+        <button id="mobileProfileBtn" class="logo" aria-label="Open account" title="Profile" style="display:none">TC</button>
       </div>
     </div>
 
@@ -281,8 +367,8 @@
       <div style="width:100%;max-width:var(--max-width);display:flex;align-items:center;gap:24px;padding:20px">
         <div class="home-left" style="flex:1">
           <div class="eyebrow">Modern banking • secure • fast</div>
-          <h1 id="homeTitle">Welcome to Texas Capital</h1>
-          <p>Manage accounts, view rental payments, and track activity with a clear navy & white interface optimized for mobile and desktop.</p>
+          <h1 id="homeTitle">Welcome to Texas Capital Bank</h1>
+          <p>Manage accounts, view rental payments, and track activity with texas capital bank available for our secured customers home and abroad.</p>
           <div class="home-cta" style="margin-top:14px">
             <button id="goLogin" class="btn btn-primary">Login</button>
             <button id="goSignup" class="btn btn-outline">Sign up</button>
@@ -316,7 +402,11 @@
             <h2 id="loginTitle">Sign in</h2>
             <div class="muted" style="font-size:13px">Access your account</div>
           </div>
-          <div style="text-align:right;color:var(--muted);font-weight:700">TC</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <!-- Cancel/back button: returns to landing -->
+            <button id="loginCancelBtn" class="btn" aria-label="Cancel and go back" title="Cancel">Cancel</button>
+            <div style="text-align:right;color:var(--muted);font-weight:700">TC</div>
+          </div>
         </div>
 
         <form id="loginForm" autocomplete="off" onsubmit="return false;">
@@ -389,24 +479,88 @@
       </div>
     </div>
 
-    <!-- Main app content -->
-    <div id="app" style="display:none" class="wrap" role="main" aria-live="polite">
+    <!-- PAYMENT MODAL (new) -->
+    <div id="paymentModal" class="payment-modal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle" aria-hidden="true">
+      <div class="payment-card" role="document">
+        <div class="payment-top">
+          <div class="title">
+            <div class="logo" style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#063a7a);display:flex;align-items:center;justify-content:center;color:white;font-weight:800">P</div>
+            <div>
+              <strong id="paymentTitle" style="font-size:18px">Pay a Bill</strong>
+              <div class="muted" style="font-size:13px">Choose a biller to pay — secure, one-time or schedule</div>
+            </div>
+          </div>
+
+          <div class="payment-search" role="search">
+            <input id="paymentSearch" placeholder="Search billers (e.g., Comcast, Visa, Wells Fargo)" aria-label="Search billers" />
+            <button id="closePaymentBtn" class="btn">Close</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;gap:8px;align-items:center">
+            <small class="muted">Quick filters:</small>
+            <button class="btn btn-outline" data-filter="all">All</button>
+            <button class="btn btn-outline" data-filter="cards">Credit Cards</button>
+            <button class="btn btn-outline" data-filter="utilities">Utilities</button>
+            <button class="btn btn-outline" data-filter="mortgage">Mortgage</button>
+          </div>
+        </div>
+
+        <div class="bill-list" id="billList" role="list" aria-live="polite" style="margin-top:12px">
+          <!-- Items rendered by JS -->
+        </div>
+
+        <!-- Card selection area: appears when user chooses to pay -->
+        <div id="cardSelection" class="card-selection" aria-live="polite">
+          <h4 style="margin:8px 0">Select a card to pay with</h4>
+          <div id="savedCardsContainer">
+            <!-- saved cards rendered by JS -->
+          </div>
+          <div style="margin-top:8px">
+            <small class="muted">If you need to link a new card (e.g., Capital One), select it then click "Link & Verify".</small>
+          </div>
+        </div>
+
+        <div id="linkingArea" style="margin-top:12px;display:none">
+          <h4 style="margin:8px 0">Link card verification</h4>
+          <div id="linkMsg" class="muted">Enter the last 4 digits of the card to verify ownership.</div>
+          <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+            <input id="linkLast4" placeholder="Last 4 digits" inputmode="numeric" maxlength="4" style="padding:8px;border-radius:8px;border:1px solid rgba(9,30,50,0.06)" />
+            <button id="linkVerifyBtn" class="btn btn-primary">Verify & Pay</button>
+            <button id="cancelLinkBtn" class="btn btn-outline">Cancel</button>
+          </div>
+        </div>
+
+        <div class="payment-footer">
+          <div id="paymentStatus" style="margin-right:auto"></div>
+          <button id="scheduleBtn" class="btn">Schedule</button>
+          <button id="payCloseBtn" class="btn btn-outline">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main app content
+         NOTE: #app now visible by default so the sidebar DOM exists for mobile off-canvas.
+         The actual app content (.main) is hidden until login by default (style on .main). -->
+    <div id="app" style="display:grid" class="wrap" role="main" aria-live="polite">
       <!-- Sidebar -->
       <aside class="sidebar" aria-label="Primary navigation">
         <div class="brand">
           <div class="logo" aria-hidden>TC</div>
           <div>
-            <h1>Texas Capital</h1>
-            <p class="muted">Navy & white prototype</p>
+            <h1>Texas Capital Bank</h1>
+            <p class="muted">Welcome back Vandella</p>
           </div>
         </div>
 
         <nav class="nav" aria-label="Main">
-          <a class="active" data-page="dashboard">Dashboard</a>
-          <a data-page="accounts">Accounts</a>
-          <a data-page="payments">Payments</a>
-          <a data-page="cards">Cards</a>
-          <a data-page="insights">Insights</a>
+          <!-- anchors now have href="#" and are keyboard-accessible -->
+          <a href="#" class="active" data-page="dashboard" role="button" tabindex="0">Dashboard</a>
+          <a href="#" data-page="accounts" role="button" tabindex="0">Accounts</a>
+          <a href="#" data-page="payments" role="button" tabindex="0">Payments</a>
+          <a href="#" data-page="cards" role="button" tabindex="0">Cards</a>
+          <a href="#" data-page="insights" role="button" tabindex="0">Insights</a>
         </nav>
 
         <div class="profile" aria-hidden="true">
@@ -418,8 +572,8 @@
         </div>
       </aside>
 
-      <!-- Main (pages live here) -->
-      <section class="main" aria-label="Dashboard content">
+      <!-- Main (pages live here) - hidden initially until user logs in -->
+      <section class="main" aria-label="Dashboard content" style="display:none">
         <header class="header" role="banner">
           <div style="display:flex;gap:12px;align-items:center;width:100%">
             <div class="search" role="search" aria-label="Search transactions or help">
@@ -506,7 +660,7 @@
           </div>
 
           <footer>
-            © <span id="year"></span> Texas Capital — Prototype UI. This is a design prototype — not a real bank.
+            © <span id="year"></span> Texas Capital Bank 
           </footer>
         </div>
 
@@ -537,7 +691,8 @@
               <h3>Payments</h3>
               <p class="muted">Schedule and view payments.</p>
               <div style="margin-top:12px">
-                <button class="btn btn-primary" onclick="fakeAction('Make Payment')">Make a payment</button>
+                <!-- NOTE: this button is wired to open the payment modal (if authenticated) -->
+                <button id="makePaymentBtn" class="btn btn-primary">Make a payment</button>
               </div>
             </div>
           </div>
@@ -626,6 +781,34 @@
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
+    // Payment modal elements
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentSearch = document.getElementById('paymentSearch');
+    const billList = document.getElementById('billList');
+    const closePaymentBtn = document.getElementById('closePaymentBtn');
+    const payCloseBtn = document.getElementById('payCloseBtn');
+    const scheduleBtn = document.getElementById('scheduleBtn');
+    const paymentStatus = document.getElementById('paymentStatus');
+    const makePaymentBtn = document.getElementById('makePaymentBtn');
+
+    const cardSelectionEl = document.getElementById('cardSelection');
+    const savedCardsContainer = document.getElementById('savedCardsContainer');
+    const linkingArea = document.getElementById('linkingArea');
+    const linkLast4 = document.getElementById('linkLast4');
+    const linkVerifyBtn = document.getElementById('linkVerifyBtn');
+    const cancelLinkBtn = document.getElementById('cancelLinkBtn');
+    const linkMsg = document.getElementById('linkMsg');
+
+    // mobile profile button
+    const mobileProfileBtn = document.getElementById('mobileProfileBtn');
+
+    // In-memory auth flag to ensure the app recognizes the current session after login (even if "remember" unchecked)
+    let AUTHED = false;
+
+    function isAuthed(){
+      return AUTHED === true || sessionStorage.getItem('demoAuth') === 'true';
+    }
+
     // helper: overlay show/hide
     function showOverlay(el){ el.classList.add('show'); el.style.visibility='visible'; el.style.opacity='1'; }
     function hideOverlay(el){ el.classList.remove('show'); el.style.visibility='hidden'; el.style.opacity='0'; }
@@ -635,17 +818,42 @@
     goSignup.addEventListener('click', showSignup);
     previewLogin.addEventListener('click', showLogin);
 
-    function showHome(){ homeScreen.style.display='flex'; hideOverlay(loginOverlay); hideOverlay(signupOverlay); }
-    function showLogin(){ homeScreen.style.display='none'; showOverlay(loginOverlay); hideOverlay(signupOverlay); usernameInput.focus(); }
-    function showSignup(){ homeScreen.style.display='none'; hideOverlay(loginOverlay); showOverlay(signupOverlay); signupUsername.focus(); }
+    function showHome(){ 
+      homeScreen.style.display='flex'; hideOverlay(loginOverlay); hideOverlay(signupOverlay); 
+      // indicate landing — hide sidebar
+      bodyEl.classList.add('home-landing');
+    }
+    function showLogin(){ 
+      // hide landing to show login
+      homeScreen.style.display='none';
+      bodyEl.classList.remove('home-landing');
+      showOverlay(loginOverlay); hideOverlay(signupOverlay); usernameInput.focus(); 
+    }
+    function showSignup(){ 
+      homeScreen.style.display='none';
+      bodyEl.classList.remove('home-landing');
+      hideOverlay(loginOverlay); showOverlay(signupOverlay); signupUsername.focus(); 
+    }
+
+    // Add "Cancel" behavior on login modal
+    const loginCancelBtn = document.getElementById('loginCancelBtn');
+    loginCancelBtn && loginCancelBtn.addEventListener('click', ()=> {
+      // hide login overlay and return to landing
+      hideOverlay(loginOverlay);
+      showHome();
+      // clear any login error
+      loginError.style.display = 'none';
+    });
 
     // close overlays on Escape
     window.addEventListener('keydown', (e) => {
       if(e.key === 'Escape'){
         hideOverlay(loginOverlay); hideOverlay(signupOverlay);
+        // close payment modal if open
+        closePaymentModal();
         // close sidebar on mobile if open
         if(bodyEl.classList.contains('sidebar-open')) toggleSidebar(false);
-        homeScreen.style.display = 'flex';
+        showHome();
       }
     });
 
@@ -677,11 +885,23 @@
     function showProcessing(ms=1200){
       processing.classList.add('show');
       processing.setAttribute('aria-hidden','false');
-      return new Promise(resolve => setTimeout(()=>{
+      return new Promise(resolve => setTimeout(()=>{ 
         processing.classList.remove('show');
         processing.setAttribute('aria-hidden','true');
         resolve();
       }, ms));
+    }
+
+    // Update mobile topbar profile button after login
+    function updateMobileProfileUI(username){
+      try {
+        const initials = (username || '').trim().split(/\s+/).map(s=>s[0]?.toUpperCase()||'').slice(0,2).join('') || 'TC';
+        mobileProfileBtn.textContent = initials;
+        mobileProfileBtn.setAttribute('aria-label', username ? `Open profile for ${username}` : 'Open profile');
+        mobileProfileBtn.title = username || 'Profile';
+        // ensure visible (inline style overrides CSS)
+        mobileProfileBtn.style.display = 'flex';
+      } catch(e){}
     }
 
     // Login flow
@@ -702,17 +922,23 @@
       await showProcessing(1100);
 
       if(checkAccount(u,p)){
-        if(document.getElementById('remember') && document.getElementById('remember').checked){
-          sessionStorage.setItem('demoAuth','true');
-        }
+        // always set demoAuth for the session (so subsequent UI checks work)
+        sessionStorage.setItem('demoAuth','true');
+        AUTHED = true;
+
         profileName.textContent = u;
         hideOverlay(loginOverlay);
         homeScreen.style.display = 'none';
-        app.style.display = 'grid';
+        // show only the main area (sidebar remains available for mobile toggling)
+        document.querySelector('.main').style.display = 'block';
         document.getElementById('lastLogin').textContent = new Date().toLocaleString();
         document.getElementById('year').textContent = new Date().getFullYear();
         document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
         dashboardBalance.textContent = '$75,000.00';
+        // remove landing class so sidebar becomes visible
+        bodyEl.classList.remove('home-landing');
+        // update mobile profile UI
+        updateMobileProfileUI(u);
         switchPage('dashboard');
       } else {
         loginError.textContent = 'Invalid username or password';
@@ -737,32 +963,45 @@
       await showProcessing(1200);
 
       sessionStorage.setItem('demoAuth','true');
+      AUTHED = true;
       profileName.textContent = u;
       hideOverlay(signupOverlay);
       homeScreen.style.display = 'none';
-      app.style.display = 'grid';
+      // show main area
+      document.querySelector('.main').style.display = 'block';
       document.getElementById('lastLogin').textContent = new Date().toLocaleString();
       document.getElementById('year').textContent = new Date().getFullYear();
       document.getElementById('asOf').textContent = new Date().toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
       dashboardBalance.textContent = '$75,000.00';
+      // remove landing class so sidebar becomes visible
+      bodyEl.classList.remove('home-landing');
+      // update mobile profile UI
+      updateMobileProfileUI(u);
       switchPage('dashboard');
     });
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', ()=> {
       sessionStorage.removeItem('demoAuth');
+      AUTHED = false;
       usernameInput.value=''; passwordInput.value='';
       document.getElementById('loginError').style.display='none';
-      app.style.display='none';
-      homeScreen.style.display='flex';
+      // hide main area (sidebar remains available)
+      document.querySelector('.main').style.display = 'none';
+      showHome();
       homeBalance.textContent = '••••••';
+      // hide mobile profile
+      mobileProfileBtn.style.display = 'none';
     });
 
-    // If remembered session -> show app directly
+    // If remembered session -> show app directly (only the main area)
     if(sessionStorage.getItem('demoAuth') === 'true'){
+      AUTHED = true;
       homeScreen.style.display='none';
-      app.style.display='grid';
+      document.querySelector('.main').style.display = 'block';
       dashboardBalance.textContent = '$75,000.00';
+      // update mobile profile UI from stored profileName if available
+      updateMobileProfileUI(profileName.textContent || 'User');
       switchPage('dashboard');
     }
 
@@ -779,10 +1018,30 @@
     }
     hamburgerBtn.addEventListener('click', ()=> toggleSidebar());
     sidebarBackdrop.addEventListener('click', ()=> toggleSidebar(false));
-    // close sidebar when nav link clicked (mobile)
-    navLinks.forEach(a => a.addEventListener('click', ()=> {
-      if(window.matchMedia('(max-width:960px)').matches) toggleSidebar(false);
-    }));
+
+    // make nav links keyboard-friendly and handle click + keep sidebar open on mobile
+    navLinks.forEach(a => {
+      // ensure anchors are keyboard accessible (tabindex already set in HTML)
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = a.getAttribute('data-page');
+        switchPage(page);
+        // NOTE: on mobile we intentionally do NOT close the sidebar automatically so users can select another link without reopening it.
+        // This change preserves the open sidebar so the user may pick other links. They can close using the backdrop or hamburger.
+        if(!window.matchMedia('(max-width:960px)').matches) {
+          // if desktop, no change needed (sidebar is static)
+        } else {
+          // keep sidebar open on mobile intentionally
+        }
+      });
+      // support Enter/Space to activate
+      a.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          a.click();
+        }
+      });
+    });
 
     /************* Page switch with fade animation *************/
     // helper to animate page switch
@@ -823,14 +1082,7 @@
       document.querySelector('.main').scrollTop = 0;
     }
 
-    navLinks.forEach(a => {
-      a.addEventListener('click', () => {
-        const page = a.getAttribute('data-page');
-        switchPage(page);
-      });
-    });
-
-    /*************
+    /************
       Dashboard data & UI (unchanged behavior)
     *************/
     const txData = [
@@ -918,7 +1170,7 @@
 
     // Quick actions
     function fakeAction(name){
-      alert(name + ' — this is a UI prototype.');
+      alert(name + ' — Ask for admin approval.');
     }
 
     // Filter & Sort
@@ -950,7 +1202,7 @@
     document.getElementById('newTransferBtn').addEventListener('click', ()=>{
       const name = prompt('Send to (name or account)');
       if(!name) return;
-      alert('Would send to ' + name + ' (prototype)');
+      alert('Would send to ' + name + ' (Admin access)');
     });
 
     document.getElementById('searchInput').addEventListener('input', (e)=>{
@@ -965,6 +1217,262 @@
       const qa = document.querySelector('.qa');
       if(qa) qa.setAttribute('tabindex','0');
     });
+
+    /************** Payment modal logic (enhanced) ****************/
+    // Example billers — realistic US bill categories & sample entries
+    const billers = [
+      { id: 'visa', group:'cards', name: 'Visa Credit Card (Chase)', acct: '•••• 3112', due: 'Oct 25, 2025', amount: 1280.50, color:'#2b6cb0' },
+      { id: 'amex', group:'cards', name: 'American Express', acct: '•••• 8871', due: 'Oct 22, 2025', amount: 320.00, color:'#1e3a8a' },
+      { id: 'citi', group:'cards', name: 'Citi Cards', acct: '•••• 5543', due: 'Oct 29, 2025', amount: 215.75, color:'#0b74b8' },
+      { id: 'comcast', group:'utilities', name: 'Comcast Xfinity (Cable)', acct: 'Account 9921', due: 'Oct 30, 2025', amount: 99.99, color:'#ef6c00' },
+      { id: 'pge', group:'utilities', name: 'PG&E (Electric)', acct: 'Service 3100', due: 'Oct 20, 2025', amount: 143.22, color:'#0b557a' },
+      { id: 'waterco', group:'utilities', name: 'City Water Co.', acct: 'Service 1244', due: 'Oct 18, 2025', amount: 35.40, color:'#0a9f6e' },
+      { id: 'wells', group:'mortgage', name: 'Wells Fargo Mortgage', acct: 'Loan 4301', due: 'Nov 01, 2025', amount: 1850.00, color:'#b91c1c' },
+      { id: 'capone', group:'autoloan', name: 'Capital One Auto Finance', acct: 'Loan 2201', due: 'Nov 05, 2025', amount: 410.00, color:'#0f766e' },
+      { id: 'verizon', group:'mobile', name: 'Verizon Wireless', acct: 'Account 5512', due: 'Oct 21, 2025', amount: 69.99, color:'#7c3aed' },
+      { id: 'navient', group:'student', name: 'Navient Student Loan', acct: 'Loan 9001', due: 'Oct 28, 2025', amount: 250.00, color:'#0ea5a4' },
+      { id: 'statefarm', group:'insurance', name: 'State Farm Insurance', acct: 'Policy 7002', due: 'Nov 10, 2025', amount: 112.30, color:'#ef4444' }
+    ];
+
+    // saved cards for selection (prototype — client-side only)
+    const savedCards = [
+      { id: 'saved-visa-3112', brand:'Visa', issuer:'Chase', last4:'3112', display:'Visa •••• 3112', provider:'Chase' },
+      { id: 'saved-capone-4234', brand:'Capital One', issuer:'Capital One', last4:'4234', display:'Capital One •••• 4234', provider:'Capital One' }
+    ];
+
+    function renderBillers(list){
+      billList.innerHTML = '';
+      if(!list || !list.length){
+        billList.innerHTML = '<div class="muted" style="padding:16px;text-align:center">No billers found</div>';
+        return;
+      }
+      list.forEach(b => {
+        const item = document.createElement('div');
+        item.className = 'bill-item';
+        item.setAttribute('role','listitem');
+        item.innerHTML = `
+          <div class="bill-meta">
+            <div class="bill-avatar" style="background:${b.color}">${b.name.charAt(0)}</div>
+            <div class="bill-info">
+              <strong>${b.name}</strong>
+              <small>${b.acct} • Due ${b.due}</small>
+            </div>
+          </div>
+          <div class="bill-right">
+            <div class="bill-amount" aria-hidden>${fmt(b.amount)}</div>
+            <div class="bill-actions">
+              <button class="btn btn-outline view-details" data-id="${b.id}">Details</button>
+              <button class="btn btn-primary pay-now" data-id="${b.id}">Pay</button>
+            </div>
+          </div>
+        `;
+        billList.appendChild(item);
+      });
+    }
+
+    // initially render
+    renderBillers(billers);
+
+    function openPaymentModal(){
+      paymentStatus.innerHTML = '';
+      paymentModal.classList.add('show');
+      paymentModal.setAttribute('aria-hidden','false');
+      // hide card selection sections by default
+      cardSelectionEl.classList.remove('show');
+      linkingArea.style.display = 'none';
+      // focus search for accessibility
+      setTimeout(()=> paymentSearch && paymentSearch.focus(), 200);
+    }
+
+    function closePaymentModal(){
+      paymentModal.classList.remove('show');
+      paymentModal.setAttribute('aria-hidden','true');
+      paymentStatus.innerHTML = '';
+      // clear any selected
+      clearCardSelection();
+    }
+
+    // NOTE: removed the unconditional openPaymentModal listener; we now handle auth check below.
+
+    // close buttons
+    closePaymentBtn && closePaymentBtn.addEventListener('click', closePaymentModal);
+    payCloseBtn && payCloseBtn.addEventListener('click', closePaymentModal);
+
+    // search filter
+    paymentSearch && paymentSearch.addEventListener('input', (e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      if(!q){ renderBillers(billers); return; }
+      const filtered = billers.filter(b => (b.name + ' ' + b.acct).toLowerCase().includes(q));
+      renderBillers(filtered);
+    });
+
+    // filter buttons (delegation)
+    document.querySelectorAll('.payment-card .btn.btn-outline[data-filter]').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{
+        const f = btn.getAttribute('data-filter');
+        if(f === 'all') renderBillers(billers);
+        else renderBillers(billers.filter(x => x.group === f));
+      });
+    });
+
+    // helper to render saved cards (selection area)
+    function renderSavedCards(){
+      savedCardsContainer.innerHTML = '';
+      savedCards.forEach(card=>{
+        const el = document.createElement('div');
+        el.className = 'saved-card';
+        el.setAttribute('data-card-id', card.id);
+        el.innerHTML = `<div style="font-weight:800">${card.display}</div><div class="muted" style="margin-left:auto">${card.provider}</div>`;
+        el.addEventListener('click', ()=> {
+          // toggle selection
+          document.querySelectorAll('.saved-card').forEach(c=>c.classList.remove('selected'));
+          el.classList.add('selected');
+          // show linking area (simulate "link & verify" step)
+          linkingArea.style.display = 'block';
+          linkLast4.value = '';
+          linkLast4.focus();
+          linkMsg.textContent = `Preparing to link ${card.display}. Enter the card's last 4 digits to verify (prototype).`;
+          linkingArea.dataset.selectedCardId = card.id;
+        });
+        savedCardsContainer.appendChild(el);
+      });
+    }
+
+    function clearCardSelection(){
+      document.querySelectorAll('.saved-card').forEach(c=>c.classList.remove('selected'));
+      linkingArea.style.display = 'none';
+      linkingArea.dataset.selectedCardId = '';
+    }
+
+    // delegate click events on billList (Details / Pay)
+    billList.addEventListener('click', async (e) => {
+      const view = e.target.closest('.view-details');
+      const pay = e.target.closest('.pay-now');
+      if(view){
+        const id = view.dataset.id;
+        const b = billers.find(x => x.id === id);
+        if(!b) return;
+        // show a small details overlay inside modal (simple)
+        paymentStatus.innerHTML = `<div style="padding:10px;border-radius:8px;background:rgba(11,67,178,0.06);border:1px solid rgba(11,67,178,0.08)"><strong>${b.name}</strong> — ${b.acct}<br><small class="muted">Due ${b.due} • Amount ${fmt(b.amount)}</small></div>`;
+        return;
+      }
+      if(pay){
+        const id = pay.dataset.id;
+        const b = billers.find(x => x.id === id);
+        if(!b) return;
+        // start payment flow: instead of immediately paying, present card-selection & link flow
+        paymentStatus.innerHTML = '';
+        // show card selection area and highlight available saved cards
+        renderSavedCards();
+        cardSelectionEl.classList.add('show');
+        linkingArea.style.display = 'none';
+        // store selected biller id for later
+        paymentModal.dataset.pendingBiller = id;
+        // focus saved cards for a11y
+        setTimeout(()=> {
+          const firstCard = savedCardsContainer.querySelector('.saved-card');
+          if(firstCard) firstCard.focus();
+        }, 120);
+
+        // If user does not want saved card, they can still click "Cancel" and use details
+        return;
+      }
+    });
+
+    // linking flow - verify (prototype)
+    linkVerifyBtn.addEventListener('click', async ()=>{
+      const selectedCardId = linkingArea.dataset.selectedCardId;
+      if(!selectedCardId){
+        alert('Please select a card first.');
+        return;
+      }
+      const last4 = linkLast4.value.trim();
+      if(!/^\d{4}$/.test(last4)){
+        alert('Enter the last 4 digits (prototype).');
+        return;
+      }
+      // simulate verifying with processing
+      await showProcessing(900);
+      // simulate verification success
+      paymentStatus.innerHTML = `<span class="pay-success">Card verified & linked — processing payment…</span>`;
+      // proceed to process payment
+      processLinkedPayment(selectedCardId);
+    });
+
+    cancelLinkBtn.addEventListener('click', ()=>{
+      clearCardSelection();
+      paymentStatus.innerHTML = '<div class="muted">Link cancelled. Choose another card or press Cancel.</div>';
+    });
+
+    async function processLinkedPayment(cardId){
+      const bId = paymentModal.dataset.pendingBiller;
+      const b = billers.find(x => x.id === bId);
+      if(!b) {
+        paymentStatus.innerHTML = `<div class="muted">No biller selected.</div>`;
+        return;
+      }
+      // simulate network/process delay
+      await showProcessing(650);
+      // show success
+      paymentStatus.innerHTML = `<span class="pay-success">Payment sent to <strong>${b.name}</strong> — ${fmt(b.amount)}</span>`;
+      // reduce dashboard balance (UI-only)
+      try {
+        const current = parseFloat(dashboardBalance.textContent.replace(/[^0-9.-]+/g,""));
+        if(!isNaN(current)){
+          const newVal = current - b.amount;
+          dashboardBalance.textContent = fmt(Math.max(newVal, 0));
+        }
+      } catch(e){}
+      // push a fake transaction to the list
+      currentTx.unshift({
+        id: Date.now(),
+        date: new Date().toISOString().slice(0,10),
+        title: `Bill payment — ${b.name}`,
+        desc: `Paid ${b.acct}`,
+        amount: -b.amount,
+        status: 'success'
+      });
+      renderTransactions(currentTx);
+      // clear selection and pending biller
+      clearCardSelection();
+      delete paymentModal.dataset.pendingBiller;
+    }
+
+    // schedule action (prototype)
+    scheduleBtn && scheduleBtn.addEventListener('click', ()=>{
+      paymentStatus.innerHTML = `<div class="muted">Scheduling is a prototype action — it will be available in full product.</div>`;
+    });
+
+    // click outside payment card to close (backdrop)
+    paymentModal.addEventListener('click', (e)=>{
+      if(e.target === paymentModal) closePaymentModal();
+    });
+
+    /************** Ensure payments modal cannot be opened when not logged in (UX) **************/
+    // Unified logic: use isAuthed() — if not logged in, show login. If logged in, open payment modal.
+    makePaymentBtn && makePaymentBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      if(!isAuthed()){
+        // show login overlay instead
+        showLogin();
+        // helpful hint: after login, user will get payment options
+        setTimeout(()=> {
+          const msg = document.createElement('div');
+          msg.className = 'muted';
+          msg.style.marginTop = '10px';
+          msg.textContent = 'Sign in to select Pay with Credit Card or Bank.';
+          if(loginOverlay && !loginOverlay.querySelector('.login-hint')) {
+            msg.classList.add('login-hint');
+            loginOverlay.querySelector('.login-card').appendChild(msg);
+          }
+        }, 160);
+      } else {
+        // open the payment options directly
+        openPaymentModal();
+      }
+    });
+
+    /************ End payment modal logic ************/
   </script>
 </body>
 </html>
